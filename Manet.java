@@ -132,7 +132,7 @@ public class Manet implements Iterable<Node>{
             double theta = Math.toRadians((double)prng.nextInt(360));
             x = Math.sin(theta) * (WORLD_LIMIT / 2);
             y = Math.cos(theta) * (WORLD_LIMIT / 2);
-        }        }
+        }
         return;
     }
 
