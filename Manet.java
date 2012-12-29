@@ -49,6 +49,7 @@ public class Manet {
         double minimum_distance = Double.MAX_VALUE;
         Node closest_node = null;
 
+        // Go through each node in the graph. If it's within range, connect
         for (Node node : graph) {
             double distance = Point2D.distance(x, y, node.getX(), node.getY());
             
@@ -63,10 +64,18 @@ public class Manet {
             }
         }
 
-
-        // Check to see if we found one within range
+        // If we didn't find one within range, attach to the closest
         if (new_node.getNeighbors().isEmpty()) {
-            // TODO: Do the walk
+            // Right-angled triangles with the same points are similar
+            // So, get the ratio, and scale the difference in coordinates
+            double ratio = NODE_COMM_RANGE / minimum_distance;
+            
+            walk_x = (new_node.getX() - closest_node.getX()) * ratio;
+            walk_y = (new_node.getY() - closest_node.getY()) * ratio;
+            new_node = new Node(walk_x, walk_y, NODE_COMM_RANGE);
+
+            new_node.addNeighbor(closest_node);
+            closest_node.addNeighbor(new_node);
         }
     }
 }
