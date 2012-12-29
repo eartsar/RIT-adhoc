@@ -41,8 +41,14 @@ public class Node {
      * @return true if the distance of this node to the other node is less 
      * than or equal to both nodes' range.
      **/
-    public boolean isWithinRange(Node other) {
+    public boolean canCommunicate(Node other) {
         double distance = Point2D.distance(this.x, this.y, other.x, other.y);
         return distance <= comm_range && distance <= other.comm_range;
     }
+
+    public double getX() { return this.x; }
+    public double getY() { return this.y; }
+    public double getRange() { return this.comm_range; }
+    public HashSet<Node> getNeighbors() { return this.neighbors; }
+
 }

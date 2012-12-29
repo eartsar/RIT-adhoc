@@ -1,5 +1,7 @@
 import java.util.Random;
 import java.util.HashSet;
+import java.util.TreeMap;
+import java.awt.geom.Point2D;
 
 public class Manet {
 
@@ -41,11 +43,30 @@ public class Manet {
         // Translate that with respect to the total range of the network
         x = x * (WORLD_LIMIT / 2.0);
         y = y * (WORLD_LIMIT / 2.0);
+        Node new_node = new Node(x, y, NODE_COMM_RANGE);
 
-        // TODO: Do the walk thing here
+        // Keep track of the closest just in case we don't find one in range
+        double minimum_distance = Double.MAX_VALUE;
+        Node closest_node = null;
 
-        Node node = new Node(x, y, NODE_COMM_RANGE);
+        for (Node node : graph) {
+            double distance = Point2D.distance(x, y, node.getX(), node.getY());
+            
+            if (distance < minimum_distance) {
+                minimum_distance = distance;
+                closest_node = node;
+            }
 
-        // TODO: Do the add thing
+            if (node.canCommunicate(new_node)) {
+                node.addNeighbor(new_node);
+                new_node.addNeighbor(node);
+            }
+        }
+
+
+        // Check to see if we found one within range
+        if (new_node.getNeighbors().isEmpty()) {
+            // TODO: Do the walk
+        }
     }
 }
