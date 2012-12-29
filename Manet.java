@@ -29,10 +29,7 @@ public class Manet implements Iterable<Node>{
 
 
     // Convenience Layer Functions
-    public void generateNode() { generateNodeGrowth(); }
-    public void generateNodeSpread() { generateNode(SPREAD); }
-    public void generateNodeGrowth() { generateNode(GROWTH); } // Shit don't work
-
+    public void generateNode() { generateNodeNaive(); }
 
     /**
      * Generates a new node using the internal PRNG to generate coordinates.
@@ -44,35 +41,16 @@ public class Manet implements Iterable<Node>{
      * Neighbor connections are then established. If the node "walked" in
      * to the graph's range, there will probably be only one neighbor.
      *
-     * TODO: Create alternative generation strategies
-     *       - Randomize angle at max distance, always walk in (grow outwards)
-     *       - 2D poisson, link up after all nodes are generated
+     * TODO: 2D poisson, controlled "honeycomb"-like?
      **/
-    private void generateNode(int method) {
+    private void generateNodeNaive() {
         // Generate an x and y within the world coordinates
-        double x = 0;
-        double y = 0;
+        double x = prng.nextDouble();
+        double y = prng.nextDouble();
 
-        if (method == SPREAD) {
-            x = prng.nextDouble();
-            y = prng.nextDouble();
-
-            
-            // Translate that with respect to the total range of the network
-            x = (x * WORLD_LIMIT) - (WORLD_LIMIT / 2);
-            y = (y * WORLD_LIMIT) - (WORLD_LIMIT / 2);
-        }
-        else if (method == GROWTH) {
-            if (graph.isEmpty()) {
-                x = 0;
-                y = 0;
-            }
-            else {
-                double theta = Math.toRadians((double)prng.nextInt(360));
-                x = Math.sin(theta) * (WORLD_LIMIT / 2);
-                y = Math.cos(theta) * (WORLD_LIMIT / 2);
-            }
-        }
+         // Translate that with respect to the total range of the network
+        x = (x * WORLD_LIMIT) - (WORLD_LIMIT / 2);
+        y = (y * WORLD_LIMIT) - (WORLD_LIMIT / 2);
 
         Node new_node = new Node(x, y, NODE_COMM_RANGE);
 
@@ -141,6 +119,21 @@ public class Manet implements Iterable<Node>{
         }
 
         graph.add(new_node);
+    }
+
+
+    // This doesn't actually work.
+    private void generateNodeGrowth() {
+        // Generate an x and y within the world coordinates
+        double x = 0;
+        double y = 0;
+
+        if (!graph.isEmpty()) {
+            double theta = Math.toRadians((double)prng.nextInt(360));
+            x = Math.sin(theta) * (WORLD_LIMIT / 2);
+            y = Math.cos(theta) * (WORLD_LIMIT / 2);
+        }        }
+        return;
     }
 
     
