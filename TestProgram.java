@@ -1,7 +1,7 @@
 public class TestProgram {
 
     public static void basicTest() {
-        Manet network = new Manet(1234);
+        Manet network = new UniformManet(1234);
 
         for(int i = 0; i < 200; i++) {
             network.generateNode();
