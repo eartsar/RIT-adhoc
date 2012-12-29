@@ -43,7 +43,8 @@ public class Node {
      **/
     public boolean canCommunicate(Node other) {
         double distance = Point2D.distance(this.x, this.y, other.x, other.y);
-        return distance <= comm_range && distance <= other.comm_range;
+        // The 1.01 is a tiny bit of leeway due to the inaccuracies in node generation math
+        return distance <= (comm_range * 1.01) && distance <= (other.comm_range * 1.01);
     }
 
     public double getX() { return this.x; }

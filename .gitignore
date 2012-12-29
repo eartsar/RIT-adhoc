@@ -1,1 +1,4 @@
 *.class
+cscl*.jar
+compile
+launch
