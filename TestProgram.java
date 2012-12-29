@@ -9,9 +9,7 @@ public class TestProgram {
 
         network.show();
 
-        /*for(Node node : network) {
-            System.out.println(node.getX() + ", " + node.getY());
-        }*/
+        network.floodBFS(true);
     }
 
 
