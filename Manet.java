@@ -70,8 +70,8 @@ public class Manet {
             // So, get the ratio, and scale the difference in coordinates
             double ratio = NODE_COMM_RANGE / minimum_distance;
             
-            walk_x = (new_node.getX() - closest_node.getX()) * ratio;
-            walk_y = (new_node.getY() - closest_node.getY()) * ratio;
+            double walk_x = (new_node.getX() - closest_node.getX()) * ratio;
+            double walk_y = (new_node.getY() - closest_node.getY()) * ratio;
             new_node = new Node(walk_x, walk_y, NODE_COMM_RANGE);
 
             new_node.addNeighbor(closest_node);
