@@ -14,6 +14,10 @@ public class Manet implements Iterable<Node>{
     // Keep this at 1.0 to make a "disk graph"
     final double NODE_COMM_RANGE = 1.0;
 
+    // Node generation methods
+    final int SPREAD = 0;
+    final int GROWTH = 1;
+
     private Random prng = null;
     private HashSet<Node> graph;
 
@@ -22,6 +26,12 @@ public class Manet implements Iterable<Node>{
         this.prng = new Random(prng_seed);
         this.graph = new HashSet<Node>();
     }
+
+
+    // Convenience Layer Functions
+    public void generateNode() { generateNodeGrowth(); }
+    public void generateNodeSpread() { generateNode(SPREAD); }
+    public void generateNodeGrowth() { generateNode(GROWTH); } // Shit don't work
 
 
     /**
@@ -38,16 +48,31 @@ public class Manet implements Iterable<Node>{
      *       - Randomize angle at max distance, always walk in (grow outwards)
      *       - 2D poisson, link up after all nodes are generated
      **/
-    public void generateNode() {
+    private void generateNode(int method) {
         // Generate an x and y within the world coordinates
-        double x = prng.nextDouble();
-        double y = prng.nextDouble();
+        double x = 0;
+        double y = 0;
 
-        
-        // Translate that with respect to the total range of the network
-        x = (x * WORLD_LIMIT) - (WORLD_LIMIT / 2);
-        y = (y * WORLD_LIMIT) - (WORLD_LIMIT / 2);
-        //System.out.println(x + ", " + y);
+        if (method == SPREAD) {
+            x = prng.nextDouble();
+            y = prng.nextDouble();
+
+            
+            // Translate that with respect to the total range of the network
+            x = (x * WORLD_LIMIT) - (WORLD_LIMIT / 2);
+            y = (y * WORLD_LIMIT) - (WORLD_LIMIT / 2);
+        }
+        else if (method == GROWTH) {
+            if (graph.isEmpty()) {
+                x = 0;
+                y = 0;
+            }
+            else {
+                double theta = Math.toRadians((double)prng.nextInt(360));
+                x = Math.sin(theta) * (WORLD_LIMIT / 2);
+                y = Math.cos(theta) * (WORLD_LIMIT / 2);
+            }
+        }
 
         Node new_node = new Node(x, y, NODE_COMM_RANGE);
 
