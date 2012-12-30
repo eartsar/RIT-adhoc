@@ -7,9 +7,9 @@ public class PoissonManet extends Manet {
 
     // POISSON CONSTANTS
     // basically, the minimum distance between nodes
-    final double CELL_SIZE = 0.15;
+    final double CELL_SIZE = 0.2;
     // defines how tightly nodes are packed around one another, small = sparse
-    final int PACKING_SIZE = 20;
+    final int PACKING_SIZE = 10;
 
     // POISSON VARIABLES
     private int grid_dim_size;
@@ -47,7 +47,7 @@ public class PoissonManet extends Manet {
 
 
     public void generateNode() {
-        
+
         // Add in the first node, if no nodes have been added
         // For now, start at 0, 0
         if (super.graph.isEmpty()) {
@@ -103,7 +103,27 @@ public class PoissonManet extends Manet {
             }
         }
 
-        if (neighborhood_vacant) {
+        // Check to make sure we're within the world bounds...
+        boolean within_world = true;
+        if (!(new_node.getX() > (-1 * super.WORLD_LIMIT / 2.0)) ||
+            !(new_node.getX() < (super.WORLD_LIMIT / 2.0)) || 
+            !(new_node.getY() > (-1 * super.WORLD_LIMIT / 2.0)) ||
+            !(new_node.getY() < (super.WORLD_LIMIT / 2.0))) {
+            within_world = false;
+        }
+
+        // If it's okay to add the node here
+        if (neighborhood_vacant && within_world) {
+
+            // First, connect the neighbors. What a hassle...
+            for (Node candidate : this.graph) {
+                if (new_node.canCommunicate(candidate)) {
+                    new_node.addNeighbor(candidate);
+                    candidate.addNeighbor(new_node);
+                }
+            }
+
+            // Add the node to the graph, grid, and queue of neighbor-spawners
             super.graph.add(new_node);
             addToGrid(new_node);
             random_queue.add(new_node);

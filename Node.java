@@ -47,6 +47,10 @@ public class Node {
         return distance <= (comm_range * 1.01) && distance <= (other.comm_range * 1.01);
     }
 
+    public String toString() {
+        return "(" + this.x + ", " + this.y + ")";
+    }
+
     public double getX() { return this.x; }
     public double getY() { return this.y; }
     public double getRange() { return this.comm_range; }

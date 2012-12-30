@@ -16,6 +16,7 @@ public class ManetCanvas {
         csclPlot.xAxisEnd(1 * (manet.WORLD_LIMIT / 2.0));
         csclPlot.yAxisStart(-1 * (manet.WORLD_LIMIT / 2.0));
         csclPlot.yAxisEnd(1 * (manet.WORLD_LIMIT / 2.0));
+        
         ListXYSeries series = new ListXYSeries();
 
         for (Node node : manet) {
