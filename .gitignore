@@ -3,3 +3,4 @@ cscl*.jar
 compile
 launch
 Releases
+.metadata*
