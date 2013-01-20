@@ -1,13 +1,10 @@
 import java.util.HashSet;
-import java.util.Iterator;
 
+public class OLSRWrapper extends ManetWrapper {
 
-public class OLSRWrapper implements ManetWrapper {
-
-    private Manet network;
 
     public OLSRWrapper(Manet network) {
-        this.network = network;
+        super(network);
     }
 
 
@@ -77,10 +74,5 @@ public class OLSRWrapper implements ManetWrapper {
         return selectedMPRs;
     }
 
-
-
-
-    public void show() { this.network.show(); }
-    public Iterator<Node> iterator() { return this.network.iterator(); }
 
 }

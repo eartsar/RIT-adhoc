@@ -7,9 +7,10 @@ public class TestProgram {
             network.generateNode();
         }
 
-        network.show();
+        ManetWrapper network_wrapper = new OLSRWrapper(network);
+        network_wrapper.show();
 
-        network.floodBFS(true);
+        network_wrapper.floodBFS(true);
     }
 
 
@@ -20,8 +21,9 @@ public class TestProgram {
             network.generateNode();
         }
 
-        network.show();
-        network.floodBFS(true);
+        ManetWrapper network_wrapper = new OLSRWrapper(network);
+        network_wrapper.show();
+        network_wrapper.floodBFS(true);
     }
 
 
