@@ -52,7 +52,7 @@ public class PoissonManet extends Manet {
         // For now, start at 0, 0
         if (super.graph.isEmpty()) {
             Node init_node = new Node(0.0, 0.0, super.NODE_COMM_RANGE);
-            super.graph.add(init_node);
+            super.addNode(init_node);
             addToGrid(init_node);
             random_queue.add(init_node);
 
@@ -124,7 +124,7 @@ public class PoissonManet extends Manet {
             }
 
             // Add the node to the graph, grid, and queue of neighbor-spawners
-            super.graph.add(new_node);
+            super.addNode(new_node);
             addToGrid(new_node);
             random_queue.add(new_node);
             node_generated = true;

@@ -1,6 +1,6 @@
 import java.util.HashSet;
 
-public class OLSRWrapper extends ManetWrapper {
+public class OLSRWrapper extends ManetWrapper implements ManetListener {
 
 
     public OLSRWrapper(Manet network) {
@@ -74,5 +74,8 @@ public class OLSRWrapper extends ManetWrapper {
         return selectedMPRs;
     }
 
+
+    public void addNodeCallback() {}
+    public void removeNodeCallback() {}
 
 }

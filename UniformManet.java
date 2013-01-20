@@ -30,7 +30,7 @@ public class UniformManet extends Manet {
 
         // If this is the first node added, we're done here
         if (super.graph.isEmpty()) {
-            super.graph.add(new_node);
+            super.addNode(new_node);
             return;
         }
 
@@ -88,6 +88,6 @@ public class UniformManet extends Manet {
             closest_node.addNeighbor(new_node);
         }
 
-        super.graph.add(new_node);
+        super.addNode(new_node);
     }
 }

@@ -16,10 +16,13 @@ public abstract class Manet implements Iterable<Node>{
     protected Random prng = null;
     protected HashSet<Node> graph;
 
+    private ManetListener listener;
+
 
     public Manet(long prng_seed) {
         this.prng = new Random(prng_seed);
         this.graph = new HashSet<Node>();
+        this.listener = null;
     }
 
 
@@ -50,5 +53,26 @@ public abstract class Manet implements Iterable<Node>{
 
     public Iterator<Node> iterator() {
         return new ManetIterator(this);
+    }
+
+    public void setListener(ManetListener listener) {
+        this.listener = listener;
+    }
+
+
+    protected void addNode(Node node) {
+        this.graph.add(node);
+        
+        if (this.listener != null) {
+            this.listener.addNodeCallback();
+        }
+    }
+
+    protected void removeNode(Node node) {
+        this.graph.remove(node);
+
+        if (this.listener != null) {
+            this.listener.removeNodeCallback();
+        }
     }
 }
