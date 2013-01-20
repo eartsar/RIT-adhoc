@@ -55,5 +55,6 @@ public class Node {
     public double getY() { return this.y; }
     public double getRange() { return this.comm_range; }
     public HashSet<Node> getNeighbors() { return this.neighbors; }
+    public int numNeighbors() { return this.neighbors.size(); }
 
 }
