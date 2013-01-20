@@ -2,12 +2,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 
-public class OLSRWrapper {
+public class OLSRWrapper implements ManetWrapper {
 
-    Manet network;
+    private Manet network;
 
     public OLSRWrapper(Manet network) {
         this.network = network;
+    }
+
+
+    public void floodPing() {
+
     }
 
 
