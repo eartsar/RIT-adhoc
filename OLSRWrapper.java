@@ -1,6 +1,6 @@
 import java.util.HashSet;
 
-public class OLSRWrapper extends ManetWrapper implements ManetListener {
+public class OLSRWrapper extends ManetWrapper {
 
 
     public OLSRWrapper(Manet network) {

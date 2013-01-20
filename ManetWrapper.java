@@ -5,7 +5,7 @@ import java.util.Random;
 import java.lang.Math;
 import java.awt.geom.Point2D;
 
-public abstract class ManetWrapper {
+public abstract class ManetWrapper implements ManetListener{
 
     // Internal seed used when selecting random nodes to ping
     final long PING_PRNG_SEED = 123456789;
@@ -16,6 +16,7 @@ public abstract class ManetWrapper {
 
     public ManetWrapper(Manet network) {
         this.network = network;
+        this.network.setListener(this);
         selector = new Random(PING_PRNG_SEED);
     }
 
@@ -117,4 +118,6 @@ public abstract class ManetWrapper {
     
 
     public abstract void floodPing();
+    public abstract void addNodeCallback();
+    public abstract void removeNodeCallback();
 }
