@@ -75,7 +75,7 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-    public void addNodeCallback() {}
-    public void removeNodeCallback() {}
+    public void addNodeCallback(Node node) {}
+    public void removeNodeCallback(Node node) {}
 
 }

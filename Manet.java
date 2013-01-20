@@ -64,7 +64,7 @@ public abstract class Manet implements Iterable<Node>{
         this.graph.add(node);
         
         if (this.listener != null) {
-            this.listener.addNodeCallback();
+            this.listener.addNodeCallback(node);
         }
     }
 
@@ -72,7 +72,7 @@ public abstract class Manet implements Iterable<Node>{
         this.graph.remove(node);
 
         if (this.listener != null) {
-            this.listener.removeNodeCallback();
+            this.listener.removeNodeCallback(node);
         }
     }
 }
