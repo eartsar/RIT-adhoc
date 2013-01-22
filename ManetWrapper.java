@@ -21,9 +21,9 @@ public abstract class ManetWrapper implements ManetListener{
     }
 
 
-    public Node getRandomNode() {
-        double x = selector.nextDouble();
-        double y = selector.nextDouble();
+    public Node getRandomNode(Random prng) {
+        double x = prng.nextDouble();
+        double y = prng.nextDouble();
         x = (x * network.WORLD_LIMIT) - (network.WORLD_LIMIT / 2);
         y = (y * network.WORLD_LIMIT) - (network.WORLD_LIMIT / 2);
 
@@ -50,7 +50,7 @@ public abstract class ManetWrapper implements ManetListener{
             return 0;
         }
 
-        Node closest_node = getRandomNode();
+        Node closest_node = getRandomNode(selector);
 
         LinkedList<Node> queue = new LinkedList<Node>();
         HashSet<Node> marked = new HashSet<Node>();

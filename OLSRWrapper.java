@@ -1,14 +1,24 @@
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Random;
+
 
 public class OLSRWrapper extends ManetWrapper {
 
+    // seed specifically for the MPR generation
+    final long MPR_PRNG_SEED = 1122334455;
 
     HashMap<Node, Double> tp_timer;
+
     HashMap<Node, Integer> hello_sent_counter;
     HashMap<Node, Integer> hello_recv_counter;
     HashMap<Node, Integer> tc_sent_counter;
     HashMap<Node, Integer> tc_recv_counter;
+
+    HashSet<Node> mpr_set;
+
+    Random mpr_prng;
+
 
     public OLSRWrapper(Manet network) {
         super(network);
@@ -17,6 +27,17 @@ public class OLSRWrapper extends ManetWrapper {
         this.hello_recv_counter = new HashMap<Node, Integer>();
         this.tc_sent_counter = new HashMap<Node, Integer>();
         this.tc_recv_counter = new HashMap<Node, Integer>();
+    
+        this.mpr_prng = new Random(this.MPR_PRNG_SEED);
+        this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+
+        // Initialize all the counters for metrics
+        for (Node node : this.network.getGraph()) {
+            hello_sent_counter.put(node, 0);
+            hello_recv_counter.put(node, 0);
+            tc_sent_counter.put(node, 0);
+            tc_recv_counter.put(node, 0);
+        }
     }
 
 
@@ -25,6 +46,17 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
+    public void floodTopology(Node source) {
+        HashSet<Node> remaining = new HashSet<Node>(this.network.getGraph());
+        remaining.remove(source);
+
+        while (!remaining.isEmpty()) {
+            // TODO: do pseudo-BFS
+        }
+    }
+
+
+    // TODO: use counters
     public HashSet<Node> findMPRs(Node source) {
         // N1 layer is just neighbors of source
         HashSet<Node> n_one = source.getNeighbors();
@@ -83,6 +115,7 @@ public class OLSRWrapper extends ManetWrapper {
             coverage.addAll(maximum.getNeighbors());
         }
 
+        // TODO: make recursive
         return selectedMPRs;
     }
 
