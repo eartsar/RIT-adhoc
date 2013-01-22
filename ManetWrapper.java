@@ -118,6 +118,6 @@ public abstract class ManetWrapper implements ManetListener{
     
 
     public abstract void floodPing();
-    public abstract void addNodeCallback();
-    public abstract void removeNodeCallback();
+    public abstract void addNodeCallback(Node node);
+    public abstract void removeNodeCallback(Node node);
 }

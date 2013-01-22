@@ -1,10 +1,22 @@
 import java.util.HashSet;
+import java.util.HashMap;
 
 public class OLSRWrapper extends ManetWrapper {
 
 
+    HashMap<Node, Double> tp_timer;
+    HashMap<Node, Integer> hello_sent_counter;
+    HashMap<Node, Integer> hello_recv_counter;
+    HashMap<Node, Integer> tc_sent_counter;
+    HashMap<Node, Integer> tc_recv_counter;
+
     public OLSRWrapper(Manet network) {
         super(network);
+        this.tp_timer = new HashMap<Node, Double>();
+        this.hello_sent_counter = new HashMap<Node, Integer>();
+        this.hello_recv_counter = new HashMap<Node, Integer>();
+        this.tc_sent_counter = new HashMap<Node, Integer>();
+        this.tc_recv_counter = new HashMap<Node, Integer>();
     }
 
 

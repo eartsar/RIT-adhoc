@@ -5,7 +5,6 @@ public class Node {
 
     private double x, y, comm_range;
     private HashSet<Node> neighbors = null;
-    private int num_transmitted, num_received;
 
 
     public Node(double x, double y, double comm_range) {
@@ -13,9 +12,6 @@ public class Node {
         this.y = y;
         this.comm_range = comm_range;
         this.neighbors = new HashSet<Node>();
-
-        this.numTransmitted = 0;
-        this.num_received = 0;
     }
 
 
@@ -59,8 +55,6 @@ public class Node {
     public double getY() { return this.y; }
     public double getRange() { return this.comm_range; }
     public HashSet<Node> getNeighbors() { return this.neighbors; }
-    public int getNumTransmitted() { return this.num_transmitted; }
-    public int getNumReceived() { return this.num_received; }
     public int numNeighbors() { return this.neighbors.size(); }
 
 

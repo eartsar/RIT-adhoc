@@ -1,0 +1,18 @@
+Just a list of things to keep in mind.
+
+
+
+WRAPPERS
+========
+
+We will want to keep track of how many messages are sent and recieved. Nodes are ignorant of this, 
+so have a mapping in the wrapper class that counts this. See OLSRWrapper.java as an example.
+
+
+
+
+OLSR
+=====
+
+WILLINGNESS is abstracted away. Random selection for the MPR election implies that the randomly 
+selected node had the highest willingness.
