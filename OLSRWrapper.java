@@ -56,16 +56,31 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-    // TODO: use counters
     public HashSet<Node> findMPRs(Node source) {
+        return findMPRs(source, new HashSet<Node>());
+    }
+
+
+    // TODO: use counters
+    public HashSet<Node> findMPRs(Node source, HashSet<Node> visited) {
+
         // N1 layer is just neighbors of source
         HashSet<Node> n_one = source.getNeighbors();
         // N2 layer is the layer of neighbors from the source
         HashSet<Node> n_two = new HashSet<Node>();
-        // List of selected nodes for the MPRs
+        // List of selected nodes for the MPRs on this layer
         HashSet<Node> selectedMPRs = new HashSet<Node>();
         // Coverage seen by MPRs
         HashSet<Node> coverage = new HashSet<Node>();
+        coverage.addAll(visited);
+
+        // Base Case
+        // If there are no "unseen" nodes from this source, return an empty list
+        HashSet<Node> unseen = new HashSet<Node>(n_one);
+        unseen.removeAll(coverage);
+        if (unseen.isEmpty()) {
+            return selectedMPRs;
+        }
 
         // Generate N2
         for (Node n : n_one ) {
@@ -115,7 +130,12 @@ public class OLSRWrapper extends ManetWrapper {
             coverage.addAll(maximum.getNeighbors());
         }
 
-        // TODO: make recursive
+
+        for (Node mpr : selectedMPRs) {
+            // Add the MPRs that come back from the recursion
+            selectedMPRs.addAll(findMPRs(mpr, visited));
+        }
+
         return selectedMPRs;
     }
 
