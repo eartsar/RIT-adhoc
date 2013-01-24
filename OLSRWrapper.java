@@ -1,6 +1,9 @@
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Random;
+import java.awt.BasicStroke;
+import edu.rit.numeric.plot.Plot;
+import edu.rit.numeric.ListXYSeries;
 
 
 public class OLSRWrapper extends ManetWrapper {
@@ -46,13 +49,50 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-    public void floodTopology(Node source) {
-        HashSet<Node> remaining = new HashSet<Node>(this.network.getGraph());
-        remaining.remove(source);
 
-        while (!remaining.isEmpty()) {
-            // TODO: do pseudo-BFS
+    public void floodTopology(Node source) { 
+        HashSet<Node> visited = floodTopology(source, new HashSet<Node>());
+        System.out.println("Number of nodes visited: " + visited.size());
+        return;
+    }
+
+
+    public HashSet<Node> floodTopology(Node source, HashSet<Node> visited) {
+        if(visited.contains(source)) {
+            return visited;
         }
+        visited.add(source);
+
+        // If this is not an MPR, just return and don't propegate.
+        if (!this.mpr_set.contains(source)) {
+            return visited;
+        }
+
+        // N1 layer is just neighbors of source
+        HashSet<Node> n_one = source.getNeighbors();
+        // N2 layer is layer of N1's neighbors
+        HashSet<Node> n_two = new HashSet<Node>();
+        
+        HashSet<Node> coverage = new HashSet<Node>(visited);
+
+        // If there are no "unseen" nodes from this source, return
+        HashSet<Node> unseen = new HashSet<Node>(n_one);
+        unseen.removeAll(coverage);
+        if (unseen.isEmpty()) {
+            return visited;
+        }
+
+        HashSet<Node> next_mpr = new HashSet<Node>(this.mpr_set);
+        next_mpr.removeAll(visited);
+        if (next_mpr.isEmpty()) {
+            return visited;
+        }
+
+        for (Node mpr : next_mpr) {
+            visited = floodTopology(mpr, visited);
+        }
+
+        return visited; 
     }
 
 
@@ -62,7 +102,7 @@ public class OLSRWrapper extends ManetWrapper {
 
 
     // TODO: use counters
-    public HashSet<Node> findMPRs(Node source, HashSet<Node> visited) {
+    public HashSet<Node> findMPRs(Node source, HashSet<Node> coverage) {
 
         // N1 layer is just neighbors of source
         HashSet<Node> n_one = source.getNeighbors();
@@ -70,26 +110,32 @@ public class OLSRWrapper extends ManetWrapper {
         HashSet<Node> n_two = new HashSet<Node>();
         // List of selected nodes for the MPRs on this layer
         HashSet<Node> selectedMPRs = new HashSet<Node>();
-        // Coverage seen by MPRs
-        HashSet<Node> coverage = new HashSet<Node>();
-        coverage.addAll(visited);
 
-        // Base Case
-        // If there are no "unseen" nodes from this source, return an empty list
-        HashSet<Node> unseen = new HashSet<Node>(n_one);
-        unseen.removeAll(coverage);
-        if (unseen.isEmpty()) {
-            return selectedMPRs;
+        // Add the initial node to the MPR set.
+        if(coverage.isEmpty()) {
+            selectedMPRs.add(source);
+            coverage.add(source);
         }
 
         // Generate N2
         for (Node n : n_one ) {
             for (Node neighbor : n.getNeighbors()) {
-                if (neighbor != source) {
+                if (neighbor != source && !n_one.contains(neighbor)) {
                     n_two.add(neighbor);
                 }
             }
         }
+
+        // Base Case
+        // If there are no "unseen" nodes from this source, return an empty list
+        HashSet<Node> unseen = new HashSet<Node>(n_one);
+        unseen.addAll(n_two);
+        
+        unseen.removeAll(coverage);
+        if (unseen.isEmpty()) {
+            return selectedMPRs;
+        }
+
 
         coverage.add(source);
         coverage.addAll(n_one);
@@ -97,10 +143,16 @@ public class OLSRWrapper extends ManetWrapper {
         // Single-neighbor nodes in N2
         for (Node n : n_one) {
             for (Node neighbor : n.getNeighbors()) {
+                if (neighbor == source || n_one.contains(neighbor)) {
+                    continue;
+                }
                 if (neighbor.numNeighbors() == 1) {
-                    coverage.add(neighbor);
                     selectedMPRs.add(n);
                 }
+            }
+
+            if (selectedMPRs.contains(n)) {
+                coverage.addAll(n.getNeighbors());
             }
         }
 
@@ -131,16 +183,43 @@ public class OLSRWrapper extends ManetWrapper {
         }
 
 
+        HashSet<Node> retSet = new HashSet<Node>();
+        retSet.addAll(selectedMPRs);
         for (Node mpr : selectedMPRs) {
-            // Add the MPRs that come back from the recursion
-            selectedMPRs.addAll(findMPRs(mpr, visited));
+            if (mpr != source) {
+                // Add the MPRs that come back from the recursion
+                retSet.addAll(findMPRs(mpr, coverage));
+            }
         }
 
-        return selectedMPRs;
+        return retSet;
     }
 
 
     public void addNodeCallback(Node node) {}
     public void removeNodeCallback(Node node) {}
+
+    public void showMPRs() {
+        Plot csclPlot = new Plot();
+        csclPlot.plotTitle("Graphical Representation of this MANET's MBRs");
+        csclPlot.xAxisStart(-1 * (network.WORLD_LIMIT / 2.0));
+        csclPlot.xAxisEnd(1 * (network.WORLD_LIMIT / 2.0));
+        csclPlot.yAxisStart(-1 * (network.WORLD_LIMIT / 2.0));
+        csclPlot.yAxisEnd(1 * (network.WORLD_LIMIT / 2.0));
+        
+        ListXYSeries series = new ListXYSeries();
+
+        for (Node mpr : this.mpr_set) {
+            series.add(mpr.getX(), mpr.getY());
+        }
+
+        csclPlot.seriesStroke(null);
+        csclPlot.xySeries(series);
+        csclPlot.getFrame().setVisible(true);
+    }
+
+
+    public HashSet<Node> getMPRSet() { return this.mpr_set; }
+    public int getManetSize() { return this.network.getGraph().size(); }
 
 }

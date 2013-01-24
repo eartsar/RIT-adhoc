@@ -4,3 +4,6 @@ compile
 launch
 Releases
 .metadata*
+.classpath
+.project
+.settings
