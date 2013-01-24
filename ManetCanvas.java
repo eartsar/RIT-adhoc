@@ -26,6 +26,7 @@ public class ManetCanvas {
             }
         }
 
+        csclPlot.seriesStroke(null);
         csclPlot.segmentedSeries(series);
         csclPlot.getFrame().setVisible(true);
     }
