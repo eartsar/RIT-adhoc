@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.LinkedList;
 
 public class TestOLSR {
 
@@ -18,11 +19,11 @@ public class TestOLSR {
         while (true) {
             Node source = wrapper.getRandomNode(r);
             Node destination = wrapper.getRandomNode(r);
-            int i = wrapper.ping(source, destination);
-            if(i == -1) {
+            LinkedList<Node> route = wrapper.ping(source, destination);
+            if(route == null) {
                 break;
             }
-            System.out.println(i);
+            System.out.println(route.size());
         }
     }
 }

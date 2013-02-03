@@ -52,7 +52,7 @@ public class OLSRWrapper extends ManetWrapper {
 
 
     // Return the number of messages it takes to ping
-    public int ping(Node source, Node destination) {
+    public LinkedList<Node> ping(Node source, Node destination) {
         LinkedList<Node> queue = new LinkedList<Node>();
         HashSet<Node> visited = new HashSet<Node>();
         HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
@@ -60,7 +60,6 @@ public class OLSRWrapper extends ManetWrapper {
         queue.add(source);
         predecessors.put(source, null);
         visited.add(source);
-        int hops = 0;
 
         // Perform a modified BFS to just get the number of hops
         // from source to destination.
@@ -69,7 +68,7 @@ public class OLSRWrapper extends ManetWrapper {
             
             // if we got there, return number of hops
             if(t == destination) {
-                return getHopsInPing(predecessors, destination);
+                return constructPath(predecessors, destination);
             }
 
 
@@ -83,7 +82,7 @@ public class OLSRWrapper extends ManetWrapper {
 
 
                 if (neighbor == destination) {
-                    return getHopsInPing(predecessors, destination);
+                    return constructPath(predecessors, destination);
                 }
 
                 // if it's just a normal node, ignore it
@@ -97,18 +96,21 @@ public class OLSRWrapper extends ManetWrapper {
             }
         }
         System.out.println("Error - Could not reach destination.");
-        return -1;
+        return null;
     }
 
-    private int getHopsInPing(HashMap<Node, Node> predecessors, Node destination) {
-        int hops = 0;
-        Node current = destination;
 
-        while(current != null) {
+    // Path generation helper for ping
+    private LinkedList<Node> constructPath(HashMap<Node, Node> predecessors, Node destination) {
+        Node current = destination;
+        LinkedList<Node> path = new LinkedList<Node>();
+
+        while (current != null) {
             current = predecessors.get(current);
-            hops++;
+            path.push(current);
         }
-        return hops;
+
+        return path;
     }
 
 

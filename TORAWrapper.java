@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -45,39 +46,52 @@ public class TORAWrapper extends ManetWrapper {
     }
 
 
-//    public HashSet<Node> findPathToDestination(Node source, Node destination) {
-    public LinkedHashSet<Node> findPathToDestination(Node source, Node destination) {
-    	
-    	LinkedHashSet<Node> destPath = new LinkedHashSet<Node>();
-    	
-    	//Check Neighbors; send QRY packet
-//    	HashSet<Node> neighbors = source.getNeighbors();
-//    	
-//    	for (Node neighbor : neighbors) {
-//			source.sendQRY(neighbor);	//TODO add sendQRY function
-//		}
-    	
-    	System.out.println("Destination: " + destination.toString());
-    	//send QRY to all neighbor-neighbors:
-    	destPath = recurseQueries(source, destination);
-    	
-    	if(destPath == null) {
-    		//No path exists to destination
-    	}
-    	else {
-    		//
-    	}
-    	
-    	//Set the source bit of the original node
-    	this.routeReq_Dest_bit.get(source).add(destination);
-//    	this.route_required_Bit.put(source, destination);
-    	
-    	
-    	
-    	//Receiving update packet, add to destPath.
-    	
-    	//Returns the a/the set of nodes which create a path to the destination
-    	return destPath;
+    public LinkedList<Node> ping(Node source, Node destination) {
+    	HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
+        LinkedList<Node> queue = new LinkedList<Node>();
+
+        queue.add(source);
+        predecessors.put(source, null);
+
+        // BFS loop
+        while (!queue.isEmpty()) {
+            Node current = queue.removeFirst();
+
+            // Are we there yet?
+            if (current == destination) {
+                // generate the path and return it here
+                constructPath(predecessors, destination);
+            }
+
+            // Go through every neighbor of the current node
+            for (Node neighbor : current.getNeighbors()) {
+
+                // If we've seen the node before, throw away the packet
+                if(predecessors.containsKey(neighbor)) {
+                    continue;
+                }
+
+                predecessors.put(neighbor, current);
+                queue.add(neighbor);
+            }
+        }
+
+        // If we get here then that means it's not a fully connected graph. That's bad.
+        System.out.println("Error - Could not reach destination.");
+        return null;
+    }
+
+    // Path generation helper for ping
+    private LinkedList<Node> constructPath(HashMap<Node, Node> predecessors, Node destination) {
+        Node current = destination;
+        LinkedList<Node> path = new LinkedList<Node>();
+
+        while (current != null) {
+            current = predecessors.get(current);
+            path.push(current);
+        }
+
+        return path;
     }
     
     
@@ -217,9 +231,9 @@ public class TORAWrapper extends ManetWrapper {
     public void showLink (Node source, Node dest) {
     	//Print the linked source to dest nodes:
     	
-    	LinkedHashSet<Node> StoDpath = new LinkedHashSet<Node>();
+    	LinkedList<Node> StoDpath = new LinkedList<Node>();
     	
-    	StoDpath = findPathToDestination(source, dest);
+    	StoDpath = ping(source, dest);
     	System.out.println();
     	System.out.println();
     	System.out.println();
