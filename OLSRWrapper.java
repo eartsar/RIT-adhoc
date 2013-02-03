@@ -50,7 +50,6 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-
     // Return the number of messages it takes to ping
     public LinkedList<Node> ping(Node source, Node destination) {
         LinkedList<Node> queue = new LinkedList<Node>();
@@ -261,7 +260,22 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-    public void addNodeCallback(Node node) {}
+    public void addNodeCallback(Node node) {
+        // Pick a random number for the time of the node
+        /*
+        T = random
+        t = timer at the node
+        C = constant interval
+
+        
+        if (T - t) >= 0:
+            T = T - t
+            n = (int)(T/C) + 1
+            t = C - (T % C)
+        else:
+            t = t - T
+        */
+    }
     public void removeNodeCallback(Node node) {}
 
     public void showMPRs() {
