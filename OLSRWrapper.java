@@ -1,5 +1,6 @@
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Random;
 import java.awt.BasicStroke;
 import edu.rit.numeric.plot.Plot;
@@ -50,6 +51,68 @@ public class OLSRWrapper extends ManetWrapper {
 
 
 
+    // Return the number of messages it takes to ping
+    public int ping(Node source, Node destination) {
+        LinkedList<Node> queue = new LinkedList<Node>();
+        HashSet<Node> visited = new HashSet<Node>();
+        HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
+
+        queue.add(source);
+        predecessors.put(source, null);
+        visited.add(source);
+        int hops = 0;
+
+        // Perform a modified BFS to just get the number of hops
+        // from source to destination.
+        while (!queue.isEmpty()) {
+            Node t = queue.removeFirst();
+            
+            // if we got there, return number of hops
+            if(t == destination) {
+                return getHopsInPing(predecessors, destination);
+            }
+
+
+            for (Node neighbor : t.getNeighbors()) {
+                // If seen already, skip
+                if (visited.contains(neighbor)) { continue; }
+                else { 
+                    visited.add(neighbor);
+                    predecessors.put(neighbor, t);
+                }
+
+
+                if (neighbor == destination) {
+                    return getHopsInPing(predecessors, destination);
+                }
+
+                // if it's just a normal node, ignore it
+                if (!mpr_set.contains(neighbor)) {
+                    visited.add(neighbor);
+                    continue;
+                }
+
+                queue.add(neighbor);
+                visited.add(neighbor);
+            }
+        }
+        System.out.println("Error - Could not reach destination.");
+        return -1;
+    }
+
+    private int getHopsInPing(HashMap<Node, Node> predecessors, Node destination) {
+        int hops = 0;
+        Node current = destination;
+
+        while(current != null) {
+            current = predecessors.get(current);
+            hops++;
+        }
+        return hops;
+    }
+
+
+
     public void floodTopology(Node source) { 
         HashSet<Node> visited = floodTopology(source, new HashSet<Node>());
         System.out.println("Number of nodes visited: " + visited.size());
@@ -96,10 +159,10 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
+
     public HashSet<Node> findMPRs(Node source) {
         return findMPRs(source, new HashSet<Node>());
     }
-
 
     // TODO: use counters
     public HashSet<Node> findMPRs(Node source, HashSet<Node> coverage) {
