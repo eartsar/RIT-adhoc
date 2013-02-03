@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+*.class
+cscl*.jar
+compile
+launch
+Releases
+.metadata*
+.classpath*
+.project*
+=======
 *.class
 cscl*.jar
 compile
@@ -7,3 +17,4 @@ Releases
 .classpath
 .project
 .settings
+>>>>>>> branch 'master' of https://github.com/ear7631/RIT-adhoc.git
