@@ -11,6 +11,8 @@ public class OLSRWrapper extends ManetWrapper {
 
     // seed specifically for the MPR generation
     final long MPR_PRNG_SEED = 1122334455;
+    final int ADD_NODE_INTERVAL_LIMIT = 8;
+    final int TC_INTERVAL = 2;
 
     HashMap<Node, Double> tp_timer;
 
@@ -22,6 +24,7 @@ public class OLSRWrapper extends ManetWrapper {
     HashSet<Node> mpr_set;
 
     Random mpr_prng;
+    Random addnode_prng;
 
 
     public OLSRWrapper(Manet network) {
@@ -33,6 +36,7 @@ public class OLSRWrapper extends ManetWrapper {
         this.tc_recv_counter = new HashMap<Node, Integer>();
     
         this.mpr_prng = new Random(this.MPR_PRNG_SEED);
+        this.mpr_prng = new Random(this.MPR_PRNG_SEED - 1);
         this.mpr_set = findMPRs(getRandomNode(mpr_prng));
 
         // Initialize all the counters for metrics
@@ -261,6 +265,22 @@ public class OLSRWrapper extends ManetWrapper {
 
 
     public void addNodeCallback(Node node) {
+        double T = addnode_prng.nextDouble();
+        double T = T * ADD_NODE_INTERVAL_LIMIT;
+
+        for (Node n : tp_timer.keySet()) {
+            double t = tp_timer.get(n);
+
+            if ((T - t) >= 0) {
+                T = T - t;
+                n = (int)(T/TC_INTERVAL) + 1;
+                t = TC_INTERVAL - (T % TC_INTERVAL);
+            } 
+            else {
+                t = t - T;
+            }
+        }
+        
         // Pick a random number for the time of the node
         /*
         T = random
