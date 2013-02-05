@@ -4,9 +4,7 @@ import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-
-import edu.rit.numeric.ListXYSeries;
-import edu.rit.numeric.plot.Plot;
+import java.util.Map;
 
 
 public class TORAWrapper extends ManetWrapper {
@@ -16,8 +14,10 @@ public class TORAWrapper extends ManetWrapper {
     HashMap<Node, Integer> QRY_rec_counter;
     HashMap<Node, Integer> UPD_sent_counter;
     HashMap<Node, Integer> UPD_rec_counter;
+    int totQRY_count;
+    int totUPD_count;
     
-    HashMap<Node, Boolean> route_required_Bit;
+//    HashMap<Node, Boolean> route_required_Bit;
     //Map of each node's route_request bit. Each node stores an RR bit for each 
     //	possible destination node in the network.
     //	<source, <destination, set/not>>
@@ -31,6 +31,9 @@ public class TORAWrapper extends ManetWrapper {
     	this.QRY_rec_counter = new HashMap<Node, Integer>();
     	this.UPD_sent_counter = new HashMap<Node, Integer>();
     	this.UPD_rec_counter = new HashMap<Node, Integer>();
+    	
+    	this.totQRY_count = 0;
+    	this.totUPD_count = 0;
     	
     	//Represents the RRbit, true=node already received qry; false=not received qry
 //    	this.route_required_Bit = new HashMap<Node, Boolean>();
@@ -49,36 +52,86 @@ public class TORAWrapper extends ManetWrapper {
     public LinkedList<Node> ping(Node source, Node destination) {
     	HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
         LinkedList<Node> queue = new LinkedList<Node>();
+        LinkedList<Node> result = new LinkedList<>();
+        LinkedList<LinkedList<Node>> listOfPaths = new LinkedList<LinkedList<Node>>();
 
         queue.add(source);
         predecessors.put(source, null);
+        
 
         // BFS loop
         while (!queue.isEmpty()) {
+        	System.out.println(queue.toString());
+        	System.out.println("Queue Length: " + queue.size());
+        	System.out.println(predecessors.toString());
             Node current = queue.removeFirst();
-
+            System.out.println(current);
+            
             // Are we there yet?
             if (current == destination) {
                 // generate the path and return it here
-                constructPath(predecessors, destination);
+                listOfPaths.add(constructPath(predecessors, destination));
+                //TODO : Backtrack, UPD packetsb 
             }
 
+            System.out.println(current.getNeighbors().toString());
             // Go through every neighbor of the current node
             for (Node neighbor : current.getNeighbors()) {
+            	
 
-                // If we've seen the node before, throw away the packet
-                if(predecessors.containsKey(neighbor)) {
-                    continue;
-                }
+            	//Add QRY packet for each added neighbor
+            	//per spec, the QRY packet is re-broadcast to all nodes.
+            	incQRYSent(current);
+            	incQRYRec(neighbor);
+            	
+                // If we've seen the node before, throw away the packet 
+            	if(predecessors.containsKey(neighbor)) {
+            		continue;
+            	}
 
-                predecessors.put(neighbor, current);
-                queue.add(neighbor);
+            	predecessors.put(neighbor, current);
+            	queue.add(neighbor);
+
             }
+//            //Secondary test count
+//            this.totQRY_count += current.getNeighbors().size();
+//            this.totUPD_count += current.getNeighbors().size();
         }
 
+        if (listOfPaths != null) {
+        	//Find path to return
+        	
+        	//Shortest path
+        	int shortestLength = listOfPaths.get(0).size();
+        	for (LinkedList<Node> linkedList : listOfPaths) {
+				if (shortestLength > linkedList.size()) {
+					shortestLength = linkedList.size();
+					result = linkedList;
+				}
+			}
+        }
+        
+        //Find the numebr of UPD packets
+        // equal to the number of relationships in predecessors - 1
+        this.totUPD_count = predecessors.size() - 1;
+        
+        for (Map.Entry<Node, Node> entry : predecessors.entrySet()) {
+        	if (entry.getValue() == null) {
+        		continue;
+        	}
+        	else {
+        		int newSent = this.UPD_sent_counter.get(entry.getKey()) + 1;
+        		this.UPD_sent_counter.put(entry.getKey(), newSent);
+        		int newRec = this.UPD_rec_counter.get(entry.getValue()) + 1;
+        		this.UPD_rec_counter.put(entry.getValue(), newRec);
+        	}
+        }
+        
         // If we get here then that means it's not a fully connected graph. That's bad.
         System.out.println("Error - Could not reach destination.");
-        return null;
+//        return null;
+        return result;
+        
     }
 
     // Path generation helper for ping
@@ -95,7 +148,29 @@ public class TORAWrapper extends ManetWrapper {
     }
     
     
-    public LinkedHashSet<Node> recurseQueries(Node source, Node destination) {
+    public void incQRYSent(Node currentNode) {
+    	int tmp = this.QRY_sent_counter.get(currentNode) + 1;
+    	this.QRY_sent_counter.put(currentNode, tmp);
+    }
+    
+    public void incQRYRec(Node currentNode) {
+    	int tmp = this.QRY_rec_counter.get(currentNode) + 1;
+    	this.QRY_rec_counter.put(currentNode, tmp);
+    }
+    
+    
+    public void incUPDSent(Node currentNode) {
+    	int tmp = this.UPD_sent_counter.get(currentNode) + 1;
+    	this.UPD_sent_counter.put(currentNode, tmp);
+    }
+    
+    public void incUPDRec(Node currentNode) {
+    	int tmp = this.UPD_rec_counter.get(currentNode) + 1;
+    	this.UPD_rec_counter.put(currentNode, tmp);
+    }
+    
+    
+     public LinkedHashSet<Node> recurseQueries(Node source, Node destination) {
     	
     	//Check Neighbors; 
     	HashSet<Node> neighbors = source.getNeighbors();
@@ -262,6 +337,27 @@ public class TORAWrapper extends ManetWrapper {
     }
     
     
+    public int getQRYtotal() {
+    	int result = 0;
+    	
+    	for (Node currentNode : network) {
+			result += this.QRY_sent_counter.get(currentNode);
+		}
+    	
+    	return result;
+    }
+    
+    
+    public int getUPDtotal() {
+    	int result = 0;
+
+    	for (Node currentNode : network) {
+    		result += this.UPD_sent_counter.get(currentNode);
+    	}
+
+    	return result;
+    }
+    
 
 	@Override
 	public void floodPing() {
@@ -270,28 +366,35 @@ public class TORAWrapper extends ManetWrapper {
 	}
 
 
-//	public void addNodeCallback() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//
-//	public void removeNodeCallback() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-
 
 	@Override
 	public void addNodeCallback(Node node) {
-		// TODO Auto-generated method stub
+		//Use UPD packets to communicate with new node
+		for (Node neighbor : node.getNeighbors()) {
+			int newSent = this.UPD_sent_counter.get(neighbor);
+			this.UPD_sent_counter.put(neighbor, newSent);
+			int newRec = this.UPD_sent_counter.get(node);
+			this.UPD_sent_counter.put(node, newRec);
+		}
+		
+		//Secondary also add to running total
+		//TODO
 		
 	}
 
 
 	@Override
 	public void removeNodeCallback(Node node) {
-		// TODO Auto-generated method stub
+		//Use UPD packets to communicate with new node
+				for (Node neighbor : node.getNeighbors()) {
+					int newSent = this.UPD_sent_counter.get(neighbor);
+					this.UPD_sent_counter.put(neighbor, newSent);
+					int newRec = this.UPD_sent_counter.get(node);
+					this.UPD_sent_counter.put(node, newRec);
+				}
+				
+				//Secondary also add to running total
+				//TODO
 		
 	}
 
