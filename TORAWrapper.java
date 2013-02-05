@@ -116,11 +116,15 @@ public class TORAWrapper extends ManetWrapper {
         this.totUPD_count = predecessors.size() - 1;
         
         for (Map.Entry<Node, Node> entry : predecessors.entrySet()) {
-        	int newSent = this.UPD_sent_counter.get(entry.getKey()) + 1;
-        	this.UPD_sent_counter.put(entry.getKey(), newSent);
-        	int newRec = this.UPD_rec_counter.get(entry.getValue()) + 1;
-        	this.UPD_rec_counter.put(entry.getValue(), newRec);
-        	
+        	if (entry.getValue() == null) {
+        		continue;
+        	}
+        	else {
+        		int newSent = this.UPD_sent_counter.get(entry.getKey()) + 1;
+        		this.UPD_sent_counter.put(entry.getKey(), newSent);
+        		int newRec = this.UPD_rec_counter.get(entry.getValue()) + 1;
+        		this.UPD_rec_counter.put(entry.getValue(), newRec);
+        	}
         }
         
         // If we get here then that means it's not a fully connected graph. That's bad.
@@ -362,28 +366,35 @@ public class TORAWrapper extends ManetWrapper {
 	}
 
 
-//	public void addNodeCallback() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//
-//	public void removeNodeCallback() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-
 
 	@Override
 	public void addNodeCallback(Node node) {
-		// TODO Auto-generated method stub
+		//Use UPD packets to communicate with new node
+		for (Node neighbor : node.getNeighbors()) {
+			int newSent = this.UPD_sent_counter.get(neighbor);
+			this.UPD_sent_counter.put(neighbor, newSent);
+			int newRec = this.UPD_sent_counter.get(node);
+			this.UPD_sent_counter.put(node, newRec);
+		}
+		
+		//Secondary also add to running total
+		//TODO
 		
 	}
 
 
 	@Override
 	public void removeNodeCallback(Node node) {
-		// TODO Auto-generated method stub
+		//Use UPD packets to communicate with new node
+				for (Node neighbor : node.getNeighbors()) {
+					int newSent = this.UPD_sent_counter.get(neighbor);
+					this.UPD_sent_counter.put(neighbor, newSent);
+					int newRec = this.UPD_sent_counter.get(node);
+					this.UPD_sent_counter.put(node, newRec);
+				}
+				
+				//Secondary also add to running total
+				//TODO
 		
 	}
 
