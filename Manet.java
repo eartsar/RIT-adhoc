@@ -2,6 +2,7 @@ import java.util.Random;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.LinkedList;
+import java.util.Stack;
 import java.util.Iterator;
 import java.lang.Math;
 import java.awt.geom.Point2D;
@@ -15,6 +16,7 @@ public abstract class Manet implements Iterable<Node>{
 
     protected Random prng = null;
     protected HashSet<Node> graph;
+    protected Stack<Node> remove_stack;
 
     private ManetListener listener;
 
@@ -22,6 +24,7 @@ public abstract class Manet implements Iterable<Node>{
     public Manet(long prng_seed) {
         this.prng = new Random(prng_seed);
         this.graph = new HashSet<Node>();
+        this.remove_stack = new Stack<Node>();
         this.listener = null;
     }
 
@@ -63,9 +66,17 @@ public abstract class Manet implements Iterable<Node>{
     protected void addNode(Node node) {
         this.graph.add(node);
         
+        // This is just for removal
+        this.remove_stack.push(node);
+
         if (this.listener != null) {
             this.listener.addNodeCallback(node);
         }
+    }
+
+    protected void removeLastNode() {
+        Node to_remove = remove_stack.pop();
+        removeNode(to_remove);
     }
 
     protected void removeNode(Node node) {

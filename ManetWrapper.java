@@ -115,7 +115,8 @@ public abstract class ManetWrapper implements ManetListener{
 
     public void show() { this.network.show(); }
     public Iterator<Node> iterator() { return this.network.iterator(); }
-    
+
+    public void pruneNode() { this.network.removeLastNode(); }
 
     public abstract void floodPing();
     public abstract void addNodeCallback(Node node);

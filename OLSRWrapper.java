@@ -266,14 +266,14 @@ public class OLSRWrapper extends ManetWrapper {
 
     public void addNodeCallback(Node node) {
         double T = addnode_prng.nextDouble();
-        double T = T * ADD_NODE_INTERVAL_LIMIT;
+        T = T * ADD_NODE_INTERVAL_LIMIT;
 
         for (Node n : tp_timer.keySet()) {
             double t = tp_timer.get(n);
 
             if ((T - t) >= 0) {
                 T = T - t;
-                n = (int)(T/TC_INTERVAL) + 1;
+                int num_reps = (int)((T/TC_INTERVAL) + 1.0);
                 t = TC_INTERVAL - (T % TC_INTERVAL);
             } 
             else {
