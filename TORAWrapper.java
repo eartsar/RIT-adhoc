@@ -81,25 +81,28 @@ public class TORAWrapper extends ManetWrapper {
                 //TODO : Backtrack, UPD packetsb 
             }
 
-//            System.out.println(current.getNeighbors().toString());
+            //            System.out.println(current.getNeighbors().toString());
             // Go through every neighbor of the current node
-            for (Node neighbor : current.getNeighbors()) {
-            	
+            if (current != null) {
+            	for (Node neighbor : current.getNeighbors()) {
 
-            	//Add QRY packet for each added neighbor
-            	//per spec, the QRY packet is re-broadcast to all nodes.
-            	incQRYSent(current);
-            	incQRYRec(neighbor);
-            	
-                // If we've seen the node before, throw away the packet 
-            	if(predecessors.containsKey(neighbor)) {
-            		continue;
+
+            		//Add QRY packet for each added neighbor
+            		//per spec, the QRY packet is re-broadcast to all nodes.
+            		incQRYSent(current);
+            		incQRYRec(neighbor);
+
+            		// If we've seen the node before, throw away the packet 
+            		if(predecessors.containsKey(neighbor)) {
+            			continue;
+            		}
+
+            		predecessors.put(neighbor, current);
+            		queue.add(neighbor);
+
             	}
-
-            	predecessors.put(neighbor, current);
-            	queue.add(neighbor);
-
             }
+
 //            //Secondary test count
 //            this.totQRY_count += current.getNeighbors().size();
 //            this.totUPD_count += current.getNeighbors().size();
@@ -380,7 +383,7 @@ public class TORAWrapper extends ManetWrapper {
     		
 //			result += this.QRY_sent_counter.get(currentNode);
 			if (this.QRY_rec_counter.containsKey(currentNode)) {
-	    		result += this.QRY_rec_counter.get(currentNode);
+	    		result += this.QRY_rec_counter.get(currentNode) + 1;
 	    	}
 	    	else {
 	    		continue;
@@ -397,7 +400,7 @@ public class TORAWrapper extends ManetWrapper {
     	for (Node currentNode : network) {
 //    		result += this.UPD_sent_counter.get(currentNode);
     		if (this.UPD_rec_counter.containsKey(currentNode)) {
-	    		result += this.UPD_rec_counter.get(currentNode);
+	    		result += this.UPD_rec_counter.get(currentNode) + 1;
 	    	}
 	    	else {
 	    		continue;
