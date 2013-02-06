@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Stack;
 
 
 public class TORAWrapper extends ManetWrapper {
@@ -14,6 +15,10 @@ public class TORAWrapper extends ManetWrapper {
     HashMap<Node, Integer> QRY_rec_counter;
     HashMap<Node, Integer> UPD_sent_counter;
     HashMap<Node, Integer> UPD_rec_counter;
+    
+    //Internal DAG structure
+    LinkedList<LinkedList<Node>> listOfPaths;
+    
     int totQRY_count;
     int totUPD_count;
     
@@ -31,6 +36,8 @@ public class TORAWrapper extends ManetWrapper {
     	this.QRY_rec_counter = new HashMap<Node, Integer>();
     	this.UPD_sent_counter = new HashMap<Node, Integer>();
     	this.UPD_rec_counter = new HashMap<Node, Integer>();
+    	
+    	this.listOfPaths = new LinkedList<LinkedList<Node>>();
     	
     	this.totQRY_count = 0;
     	this.totUPD_count = 0;
@@ -53,7 +60,7 @@ public class TORAWrapper extends ManetWrapper {
     	HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
         LinkedList<Node> queue = new LinkedList<Node>();
         LinkedList<Node> result = new LinkedList<>();
-        LinkedList<LinkedList<Node>> listOfPaths = new LinkedList<LinkedList<Node>>();
+//        LinkedList<LinkedList<Node>> listOfPaths = new LinkedList<LinkedList<Node>>();
 
         queue.add(source);
         predecessors.put(source, null);
@@ -70,7 +77,7 @@ public class TORAWrapper extends ManetWrapper {
             // Are we there yet?
             if (current == destination) {
                 // generate the path and return it here
-                listOfPaths.add(constructPath(predecessors, destination));
+                this.listOfPaths.add(constructPath(predecessors, destination));
                 //TODO : Backtrack, UPD packetsb 
             }
 
@@ -98,12 +105,12 @@ public class TORAWrapper extends ManetWrapper {
 //            this.totUPD_count += current.getNeighbors().size();
         }
 
-        if (listOfPaths != null) {
+        if (this.listOfPaths != null) {
         	//Find path to return
         	
-        	//Shortest path
-        	int shortestLength = listOfPaths.get(0).size();
-        	for (LinkedList<Node> linkedList : listOfPaths) {
+        	//return Shortest path
+        	int shortestLength = this.listOfPaths.get(0).size();
+        	for (LinkedList<Node> linkedList : this.listOfPaths) {
 				if (shortestLength > linkedList.size()) {
 					shortestLength = linkedList.size();
 					result = linkedList;
@@ -385,17 +392,76 @@ public class TORAWrapper extends ManetWrapper {
 
 	@Override
 	public void removeNodeCallback(Node node) {
-		//Use UPD packets to communicate with new node
-				for (Node neighbor : node.getNeighbors()) {
-					int newSent = this.UPD_sent_counter.get(neighbor);
-					this.UPD_sent_counter.put(neighbor, newSent);
-					int newRec = this.UPD_sent_counter.get(node);
-					this.UPD_sent_counter.put(node, newRec);
-				}
-				
-				//Secondary also add to running total
-				//TODO
+
+		HashSet<Node> neighbors = node.getNeighbors();
 		
+		boolean recalcRoute = false;
+		
+		//Get every path that contains the deleted node
+    	HashSet<LinkedList<Node>> pathsToModify = new HashSet<LinkedList<Node>>();
+    	HashSet<LinkedList<Node>> unmodifiedPaths = new HashSet<LinkedList<Node>>();
+		
+		//Node removed from network
+		//	first check: involved in path to destination?
+		//TODO check list of LinkedLists
+    	for (LinkedList<Node> linkedList : this.listOfPaths) {
+
+    		if (linkedList.contains(node)) {
+    			pathsToModify.add(linkedList);
+    			recalcRoute = true;
+    		}
+    		else {
+    			unmodifiedPaths.add(linkedList);
+    		}
+    	}
+    	
+    	
+    	//Variables to assist reverse path updating
+    	//HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
+    	HashSet<Node> visited = new HashSet<Node>();
+        LinkedList<Node> queue = new LinkedList<Node>();
+        Stack<Node> stack = new Stack<Node>();
+//        LinkedList<Node> result = new LinkedList<>();
+    	
+    	if (recalcRoute) {
+    		//Iterate up each path, add each node previous to the deleted node to the stack
+    		for (LinkedList<Node> revPath : pathsToModify) {
+				
+    			for (Node prevNode : revPath) {
+					if (prevNode != node) {
+						stack.push(prevNode);
+					}
+					else {
+						//TODO test
+						break;
+					}
+				}
+    			
+    			boolean nodesNotUpdated = true;
+    			while (!stack.isEmpty()) {
+    				Node current = stack.pop();
+    				
+    				boolean usedInUnmodifiedPath = false;
+    				for (LinkedList<Node> compareList : unmodifiedPaths) {
+    					if (compareList.contains(current)) {
+    						continue;
+    					}
+    					else {
+    						usedInUnmodifiedPath = true;
+    						break;
+    					}	
+    				}
+    				
+    				if(usedInUnmodifiedPath) {
+    					//add UPD packet
+    					incUPDRec(current);
+    					incUPDSent(revPath.get(revPath.indexOf(current) + 1));
+    				}
+    			}
+    			
+    			//loop to next path that contains the deleted node
+    		}
+    	}
 	}
 
 
