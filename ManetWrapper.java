@@ -16,7 +16,7 @@ public abstract class ManetWrapper implements ManetListener{
 
     public ManetWrapper(Manet network) {
         this.network = network;
-        this.network.setListener(this);
+        this.network.addListener(this);
         selector = new Random(PING_PRNG_SEED);
     }
 
