@@ -60,7 +60,7 @@ public class TORAWrapper extends ManetWrapper {
     	HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
         LinkedList<Node> queue = new LinkedList<Node>();
         LinkedList<Node> result = new LinkedList<>();
-//        LinkedList<LinkedList<Node>> listOfPaths = new LinkedList<LinkedList<Node>>();
+        this.listOfPaths = new LinkedList<LinkedList<Node>>();
 
         queue.add(source);
         predecessors.put(source, null);
@@ -68,11 +68,11 @@ public class TORAWrapper extends ManetWrapper {
 
         // BFS loop
         while (!queue.isEmpty()) {
-        	System.out.println(queue.toString());
-        	System.out.println("Queue Length: " + queue.size());
-        	System.out.println(predecessors.toString());
+//        	System.out.println(queue.toString());
+//        	System.out.println("Queue Length: " + queue.size());
+//        	System.out.println(predecessors.toString());
             Node current = queue.removeFirst();
-            System.out.println(current);
+//            System.out.println(current);
             
             // Are we there yet?
             if (current == destination) {
@@ -81,7 +81,7 @@ public class TORAWrapper extends ManetWrapper {
                 //TODO : Backtrack, UPD packetsb 
             }
 
-            System.out.println(current.getNeighbors().toString());
+//            System.out.println(current.getNeighbors().toString());
             // Go through every neighbor of the current node
             for (Node neighbor : current.getNeighbors()) {
             	
@@ -127,15 +127,17 @@ public class TORAWrapper extends ManetWrapper {
         		continue;
         	}
         	else {
-        		int newSent = this.UPD_sent_counter.get(entry.getKey()) + 1;
-        		this.UPD_sent_counter.put(entry.getKey(), newSent);
-        		int newRec = this.UPD_rec_counter.get(entry.getValue()) + 1;
-        		this.UPD_rec_counter.put(entry.getValue(), newRec);
+        		incUPDSent(entry.getKey());
+        		incUPDRec(entry.getValue());
+//        		int newSent = this.UPD_sent_counter.get(entry.getKey()) + 1;
+//        		this.UPD_sent_counter.put(entry.getKey(), newSent);
+//        		int newRec = this.UPD_rec_counter.get(entry.getValue()) + 1;
+//        		this.UPD_rec_counter.put(entry.getValue(), newRec);
         	}
         }
         
         // If we get here then that means it's not a fully connected graph. That's bad.
-        System.out.println("Error - Could not reach destination.");
+//        System.out.println("Error - Could not reach destination.");
 //        return null;
         return result;
         
@@ -156,24 +158,45 @@ public class TORAWrapper extends ManetWrapper {
     
     
     public void incQRYSent(Node currentNode) {
-    	int tmp = this.QRY_sent_counter.get(currentNode) + 1;
-    	this.QRY_sent_counter.put(currentNode, tmp);
+    	if (this.QRY_sent_counter.containsKey(currentNode)) {
+    		int tmp = this.QRY_sent_counter.get(currentNode) + 1;
+        	this.QRY_sent_counter.put(currentNode, tmp);
+    	}
+    	else {
+    		this.QRY_sent_counter.put(currentNode, 0);
+    	}
     }
     
     public void incQRYRec(Node currentNode) {
-    	int tmp = this.QRY_rec_counter.get(currentNode) + 1;
-    	this.QRY_rec_counter.put(currentNode, tmp);
+    	if (this.QRY_rec_counter.containsKey(currentNode)) {
+    		int tmp = this.QRY_rec_counter.get(currentNode) + 1;
+        	this.QRY_rec_counter.put(currentNode, tmp);
+    	}
+    	else {
+    		this.QRY_rec_counter.put(currentNode, 0);
+    	}
     }
     
     
     public void incUPDSent(Node currentNode) {
-    	int tmp = this.UPD_sent_counter.get(currentNode) + 1;
-    	this.UPD_sent_counter.put(currentNode, tmp);
+    	if (this.UPD_sent_counter.containsKey(currentNode)) {
+    		int tmp = this.UPD_sent_counter.get(currentNode) + 1;
+        	this.UPD_sent_counter.put(currentNode, tmp);
+    	}
+    	else {
+    		this.UPD_sent_counter.put(currentNode, 0);
+    	}
     }
     
     public void incUPDRec(Node currentNode) {
-    	int tmp = this.UPD_rec_counter.get(currentNode) + 1;
-    	this.UPD_rec_counter.put(currentNode, tmp);
+    	if (this.UPD_rec_counter.containsKey(currentNode)) {
+    		int tmp = this.UPD_rec_counter.get(currentNode) + 1;
+        	this.UPD_rec_counter.put(currentNode, tmp);
+    	}
+    	else {
+    		this.UPD_rec_counter.put(currentNode, 0);
+    	}
+    	
     }
     
     
@@ -186,7 +209,7 @@ public class TORAWrapper extends ManetWrapper {
     	//HashSet to hold backrack process from dest > source
     	LinkedHashSet<Node> backtrack = new LinkedHashSet<Node>();
     	
-    	System.out.println("Called: " + source.toString());
+//    	System.out.println("Called: " + source.toString());
     	if (source == destination) {
     		//Start backtrack process
     		backtrack.add(source);
@@ -203,7 +226,7 @@ public class TORAWrapper extends ManetWrapper {
     					if (sendQuery(source, destination, neighbor) == true) {
     						//add to HashSet to flood to child nodes
     						newSources.add(neighbor);
-    						System.out.println("new neighbors: " + neighbor.toString());
+//    						System.out.println("new neighbors: " + neighbor.toString());
     					}
     					else {
     						//Node already received QRY
@@ -212,7 +235,7 @@ public class TORAWrapper extends ManetWrapper {
 
     				//loop through the hashset created above:
     				for (Node newNeighbor : newSources) {
-    					System.out.println("calling neighbors: " + newNeighbor.toString());
+//    					System.out.println("calling neighbors: " + newNeighbor.toString());
     					backtrack =  recurseQueries(newNeighbor, destination);
     					if(backtrack == null) {
 //    						return null;
@@ -344,11 +367,24 @@ public class TORAWrapper extends ManetWrapper {
     }
     
     
+    public int getRecTotal() {
+    	int total = getQRYtotal() + getUPDtotal();
+    	return total;
+    }
+    
+    
     public int getQRYtotal() {
     	int result = 0;
     	
     	for (Node currentNode : network) {
-			result += this.QRY_sent_counter.get(currentNode);
+    		
+//			result += this.QRY_sent_counter.get(currentNode);
+			if (this.QRY_rec_counter.containsKey(currentNode)) {
+	    		result += this.QRY_rec_counter.get(currentNode);
+	    	}
+	    	else {
+	    		continue;
+	    	}
 		}
     	
     	return result;
@@ -359,10 +395,29 @@ public class TORAWrapper extends ManetWrapper {
     	int result = 0;
 
     	for (Node currentNode : network) {
-    		result += this.UPD_sent_counter.get(currentNode);
+//    		result += this.UPD_sent_counter.get(currentNode);
+    		if (this.UPD_rec_counter.containsKey(currentNode)) {
+	    		result += this.UPD_rec_counter.get(currentNode);
+	    	}
+	    	else {
+	    		continue;
+	    	}
     	}
 
     	return result;
+    }
+    
+    public void clearMetrics() {
+    	int zero = 0;
+    	for (Node currentNode : this.network) {
+			this.QRY_rec_counter.put(currentNode, zero);
+			this.QRY_sent_counter.put(currentNode, zero);
+			this.UPD_rec_counter.put(currentNode, zero);
+			this.UPD_sent_counter.put(currentNode, zero);
+		}
+    	
+    	this.totQRY_count = 0;
+    	this.totUPD_count = 0;
     }
     
 
@@ -378,10 +433,12 @@ public class TORAWrapper extends ManetWrapper {
 	public void addNodeCallback(Node node) {
 		//Use UPD packets to communicate with new node
 		for (Node neighbor : node.getNeighbors()) {
-			int newSent = this.UPD_sent_counter.get(neighbor);
-			this.UPD_sent_counter.put(neighbor, newSent);
-			int newRec = this.UPD_sent_counter.get(node);
-			this.UPD_sent_counter.put(node, newRec);
+			incUPDSent(neighbor);
+			incUPDRec(node);
+//			int newSent = this.UPD_sent_counter.get(neighbor);
+//			this.UPD_sent_counter.put(neighbor, newSent);
+//			int newRec = this.UPD_sent_counter.get(node);
+//			this.UPD_sent_counter.put(node, newRec);
 		}
 		
 		//Secondary also add to running total
@@ -393,7 +450,7 @@ public class TORAWrapper extends ManetWrapper {
 	@Override
 	public void removeNodeCallback(Node node) {
 
-		HashSet<Node> neighbors = node.getNeighbors();
+//		HashSet<Node> neighbors = node.getNeighbors();
 		
 		boolean recalcRoute = false;
 		
@@ -405,7 +462,13 @@ public class TORAWrapper extends ManetWrapper {
 		//	first check: involved in path to destination?
 		//TODO check list of LinkedLists
     	for (LinkedList<Node> linkedList : this.listOfPaths) {
-
+    		System.out.println("looking for: " + node.toString());
+    		System.out.println("Inside this list: ");
+    		for (Node node2 : linkedList) {
+    			if (node2 != null) {
+    				System.out.println(node2.toString());
+    			}
+			}
     		if (linkedList.contains(node)) {
     			pathsToModify.add(linkedList);
     			recalcRoute = true;
@@ -428,34 +491,44 @@ public class TORAWrapper extends ManetWrapper {
     		for (LinkedList<Node> revPath : pathsToModify) {
 				
     			for (Node prevNode : revPath) {
-					if (prevNode != node) {
-						stack.push(prevNode);
-					}
-					else {
-						//TODO test
-						break;
-					}
+    				if (prevNode != null) {
+    					if (prevNode != node) {
+    						stack.push(prevNode);
+    					}
+    					else {
+    						//TODO test
+    						break;
+    					}
+    				}
 				}
     			
     			boolean nodesNotUpdated = true;
     			while (!stack.isEmpty()) {
     				Node current = stack.pop();
     				
-    				boolean usedInUnmodifiedPath = false;
-    				for (LinkedList<Node> compareList : unmodifiedPaths) {
-    					if (compareList.contains(current)) {
-    						continue;
-    					}
-    					else {
-    						usedInUnmodifiedPath = true;
-    						break;
-    					}	
+    				//check if there were any paths that weren't modified
+    				if (unmodifiedPaths.size() == 0) {
+    					//All paths were modified, add UPD packet for each node
+						incUPDRec(current);
+						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
     				}
-    				
-    				if(usedInUnmodifiedPath) {
-    					//add UPD packet
-    					incUPDRec(current);
-    					incUPDSent(revPath.get(revPath.indexOf(current) + 1));
+    				else {
+    					boolean usedInUnmodifiedPath = false;
+    					for (LinkedList<Node> compareList : unmodifiedPaths) {
+    						if (compareList.contains(current)) {
+    							continue;
+    						}
+    						else {
+    							usedInUnmodifiedPath = true;
+    							break;
+    						}	
+    					}
+
+    					if(usedInUnmodifiedPath) {
+    						//add UPD packet
+    						incUPDRec(current);
+    						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
+    					}
     				}
     			}
     			
