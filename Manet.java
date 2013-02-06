@@ -80,10 +80,13 @@ public abstract class Manet implements Iterable<Node>{
     }
 
     protected void removeNode(Node node) {
+        for (Node neighbor : node.getNeighbors()) {
+            neighbor.removeNeighbor(node);
+        }
         this.graph.remove(node);
 
         for (ManetListener listener : this.listeners) {
-            listener.addNodeCallback(node);
+            listener.removeNodeCallback(node);
         }
     }
 }

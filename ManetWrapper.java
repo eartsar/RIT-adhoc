@@ -39,6 +39,7 @@ public abstract class ManetWrapper implements ManetListener{
             }
         }
 
+        System.out.println(network.getGraph().size());
         return closest_node;
     }
 

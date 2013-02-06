@@ -21,8 +21,6 @@ public class OLSRWrapper extends ManetWrapper {
     HashSet<Node> mpr_set;
 
     Random mpr_prng;
-    Random addnode_prng;
-
 
     public OLSRWrapper(Manet network) {
         super(network);
@@ -30,7 +28,6 @@ public class OLSRWrapper extends ManetWrapper {
         this.tc_recv_counter = new HashMap<Node, Integer>();
 
         this.mpr_prng = new Random(this.MPR_PRNG_SEED);
-        this.mpr_prng = new Random(this.MPR_PRNG_SEED - 1);
         this.mpr_set = findMPRs(getRandomNode(mpr_prng));
 
         // Initialize all the counters for metrics
@@ -296,7 +293,18 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-    public void removeNodeCallback(Node node) {}
+    public void removeNodeCallback(Node node) {
+        tc_recv_counter.put(node, 0);
+        
+        // Find new MPRs
+        this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+
+        int num_reps = 1;
+
+        for (Node mpr : this.mpr_set) {
+            floodTopology(mpr, num_reps);
+        }
+    }
 
     public void showMPRs() {
         Plot csclPlot = new Plot();
