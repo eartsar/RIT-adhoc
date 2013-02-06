@@ -102,12 +102,11 @@ public class TORAWrapper extends ManetWrapper {
 
             	}
             }
-
-//            //Secondary test count
-//            this.totQRY_count += current.getNeighbors().size();
-//            this.totUPD_count += current.getNeighbors().size();
         }
 
+//        //DEBUG:
+//        System.out.println("overhead total: " + getRecTotal());
+        
         if (this.listOfPaths != null) {
         	//Find path to return
         	
@@ -123,7 +122,7 @@ public class TORAWrapper extends ManetWrapper {
         
         //Find the numebr of UPD packets
         // equal to the number of relationships in predecessors - 1
-        this.totUPD_count = predecessors.size() - 1;
+//        this.totUPD_count = predecessors.size() - 1;
         
         for (Map.Entry<Node, Node> entry : predecessors.entrySet()) {
         	if (entry.getValue() == null) {
@@ -138,6 +137,9 @@ public class TORAWrapper extends ManetWrapper {
 //        		this.UPD_rec_counter.put(entry.getValue(), newRec);
         	}
         }
+        
+      //DEBUG:
+        System.out.println("overhead total: " + getRecTotal());
         
         // If we get here then that means it's not a fully connected graph. That's bad.
 //        System.out.println("Error - Could not reach destination.");
@@ -342,9 +344,9 @@ public class TORAWrapper extends ManetWrapper {
     	LinkedList<Node> StoDpath = new LinkedList<Node>();
     	
     	StoDpath = ping(source, dest);
-    	System.out.println();
-    	System.out.println();
-    	System.out.println();
+//    	System.out.println();
+//    	System.out.println();
+//    	System.out.println();
     	
     	String result = "Source: " + source.getX() + ", " + source.getY() + "\n";
     	//Display the path
@@ -353,7 +355,7 @@ public class TORAWrapper extends ManetWrapper {
 		}
     	result += "Destination: " + dest.getX() + ", " + dest.getY() + "\n"; 
     	
-    	System.out.println(result);
+//    	System.out.println(result);
     	
     	int totQRY = 0;
     	int totUPD = 0;
@@ -365,8 +367,8 @@ public class TORAWrapper extends ManetWrapper {
 			totQRY += this.UPD_sent_counter.get(node).intValue();
 		}
     	
-    	System.out.println("Total QRY packets sent: " + totQRY);
-    	System.out.println("Total UPD packet sent: " + totUPD);
+//    	System.out.println("Total QRY packets sent: " + totQRY);
+//    	System.out.println("Total UPD packet sent: " + totUPD);
     }
     
     
@@ -465,13 +467,13 @@ public class TORAWrapper extends ManetWrapper {
 		//	first check: involved in path to destination?
 		//TODO check list of LinkedLists
     	for (LinkedList<Node> linkedList : this.listOfPaths) {
-    		System.out.println("looking for: " + node.toString());
-    		System.out.println("Inside this list: ");
-    		for (Node node2 : linkedList) {
-    			if (node2 != null) {
-    				System.out.println(node2.toString());
-    			}
-			}
+//    		System.out.println("looking for: " + node.toString());
+//    		System.out.println("Inside this list: ");
+//    		for (Node node2 : linkedList) {
+//    			if (node2 != null) {
+//    				System.out.println(node2.toString());
+//    			}
+//			}
     		if (linkedList.contains(node)) {
     			pathsToModify.add(linkedList);
     			recalcRoute = true;
