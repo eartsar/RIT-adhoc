@@ -16,36 +16,34 @@ public class OLSRWrapper extends ManetWrapper {
 
     HashMap<Node, Double> tp_timer;
 
-    HashMap<Node, Integer> hello_sent_counter;
-    HashMap<Node, Integer> hello_recv_counter;
-    HashMap<Node, Integer> tc_sent_counter;
     HashMap<Node, Integer> tc_recv_counter;
 
     HashSet<Node> mpr_set;
 
     Random mpr_prng;
-    Random addnode_prng;
-
 
     public OLSRWrapper(Manet network) {
         super(network);
         this.tp_timer = new HashMap<Node, Double>();
-        this.hello_sent_counter = new HashMap<Node, Integer>();
-        this.hello_recv_counter = new HashMap<Node, Integer>();
-        this.tc_sent_counter = new HashMap<Node, Integer>();
         this.tc_recv_counter = new HashMap<Node, Integer>();
-    
+
         this.mpr_prng = new Random(this.MPR_PRNG_SEED);
-        this.mpr_prng = new Random(this.MPR_PRNG_SEED - 1);
         this.mpr_set = findMPRs(getRandomNode(mpr_prng));
 
         // Initialize all the counters for metrics
         for (Node node : this.network.getGraph()) {
-            hello_sent_counter.put(node, 0);
-            hello_recv_counter.put(node, 0);
-            tc_sent_counter.put(node, 0);
             tc_recv_counter.put(node, 0);
         }
+    }
+
+
+    public int getTotalPacketsRecieved() {
+        int total = 0;
+        for (Node node : tc_recv_counter.keySet()) {
+            total = total + tc_recv_counter.get(node);
+        }
+
+        return total;
     }
 
 
@@ -109,6 +107,8 @@ public class OLSRWrapper extends ManetWrapper {
         LinkedList<Node> path = new LinkedList<Node>();
 
         while (current != null) {
+            int overhead = tc_recv_counter.get(current);
+            tc_recv_counter.put(current, overhead + 1);
             current = predecessors.get(current);
             path.push(current);
         }
@@ -118,21 +118,28 @@ public class OLSRWrapper extends ManetWrapper {
 
 
 
-    public void floodTopology(Node source) { 
-        HashSet<Node> visited = floodTopology(source, new HashSet<Node>());
-        System.out.println("Number of nodes visited: " + visited.size());
+    public void floodTopology(Node source, int reps) { 
+        HashSet<Node> visited = floodTopology(source, new HashSet<Node>(), reps);
         return;
     }
 
 
-    public HashSet<Node> floodTopology(Node source, HashSet<Node> visited) {
+    public HashSet<Node> floodTopology(Node source, HashSet<Node> visited, int reps) {
         if(visited.contains(source)) {
             return visited;
         }
         visited.add(source);
 
+
+        // Message recieved
+        int msg = tc_recv_counter.get(source) + reps;
+        tc_recv_counter.put(source, msg);   
+
+
+        // From here on is the default forwarding protocol
+
         // If this is not an MPR, just return and don't propegate.
-        if (!this.mpr_set.contains(source)) {
+        if (!this.mpr_set.contains(source)) {            
             return visited;
         }
 
@@ -157,7 +164,7 @@ public class OLSRWrapper extends ManetWrapper {
         }
 
         for (Node mpr : next_mpr) {
-            visited = floodTopology(mpr, visited);
+            visited = floodTopology(mpr, visited, reps);
         }
 
         return visited; 
@@ -169,7 +176,7 @@ public class OLSRWrapper extends ManetWrapper {
         return findMPRs(source, new HashSet<Node>());
     }
 
-    // TODO: use counters
+
     public HashSet<Node> findMPRs(Node source, HashSet<Node> coverage) {
 
         // N1 layer is just neighbors of source
@@ -265,38 +272,41 @@ public class OLSRWrapper extends ManetWrapper {
 
 
     public void addNodeCallback(Node node) {
-        double T = addnode_prng.nextDouble();
-        T = T * ADD_NODE_INTERVAL_LIMIT;
-
-        for (Node n : tp_timer.keySet()) {
-            double t = tp_timer.get(n);
-
-            if ((T - t) >= 0) {
-                T = T - t;
-                int num_reps = (int)((T/TC_INTERVAL) + 1.0);
-                t = TC_INTERVAL - (T % TC_INTERVAL);
-            } 
-            else {
-                t = t - T;
+        tc_recv_counter.put(node, 0);
+        
+        // Find new MPRs
+        boolean update = true;
+        for (Node neighbor : node.getNeighbors()) {
+            if (this.mpr_set.contains(neighbor)) {
+                update = false;
             }
         }
-        
-        // Pick a random number for the time of the node
-        /*
-        T = random
-        t = timer at the node
-        C = constant interval
 
-        
-        if (T - t) >= 0:
-            T = T - t
-            n = (int)(T/C) + 1
-            t = C - (T % C)
-        else:
-            t = t - T
-        */
+        if (update) {
+            this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+        }
+
+
+        int num_reps = 1;
+
+        for (Node mpr : this.mpr_set) {
+            floodTopology(mpr, num_reps);
+        }
     }
-    public void removeNodeCallback(Node node) {}
+
+
+    public void removeNodeCallback(Node node) {
+        tc_recv_counter.put(node, 0);
+        
+        // Find new MPRs
+        this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+
+        int num_reps = 1;
+
+        for (Node mpr : this.mpr_set) {
+            floodTopology(mpr, num_reps);
+        }
+    }
 
     public void showMPRs() {
         Plot csclPlot = new Plot();
@@ -317,6 +327,11 @@ public class OLSRWrapper extends ManetWrapper {
         csclPlot.getFrame().setVisible(true);
     }
 
+    public void clearMetrics() {
+        for(Node n : tc_recv_counter.keySet()) {
+            tc_recv_counter.put(n, 0);
+        }
+    }
 
     public HashSet<Node> getMPRSet() { return this.mpr_set; }
     public int getManetSize() { return this.network.getGraph().size(); }

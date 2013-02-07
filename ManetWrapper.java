@@ -16,7 +16,7 @@ public abstract class ManetWrapper implements ManetListener{
 
     public ManetWrapper(Manet network) {
         this.network = network;
-        this.network.setListener(this);
+        this.network.addListener(this);
         selector = new Random(PING_PRNG_SEED);
     }
 
@@ -118,7 +118,9 @@ public abstract class ManetWrapper implements ManetListener{
 
     public void pruneNode() { this.network.removeLastNode(); }
 
+    public abstract LinkedList<Node> ping(Node source, Node destination);
     public abstract void floodPing();
     public abstract void addNodeCallback(Node node);
     public abstract void removeNodeCallback(Node node);
+    public abstract void clearMetrics();
 }

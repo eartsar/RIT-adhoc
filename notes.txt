@@ -1,18 +1,13 @@
-Just a list of things to keep in mind.
+Tests:
+
+Testing Overhead of Adding Nodes
+--------------------------------
+
+From trial = 0 to NUM_TRIALS
+    create network
+    From N = 1 to 1000
+        add node to network
+        record the overhead
+    Add the recorded to a trials list
 
 
-
-WRAPPERS
-========
-
-We will want to keep track of how many messages are sent and recieved. Nodes are ignorant of this, 
-so have a mapping in the wrapper class that counts this. See OLSRWrapper.java as an example.
-
-
-
-
-OLSR
-=====
-
-WILLINGNESS is abstracted away. Random selection for the MPR election implies that the randomly 
-selected node had the highest willingness.

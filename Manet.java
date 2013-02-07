@@ -18,14 +18,14 @@ public abstract class Manet implements Iterable<Node>{
     protected HashSet<Node> graph;
     protected Stack<Node> remove_stack;
 
-    private ManetListener listener;
+    private LinkedList<ManetListener> listeners;
 
 
     public Manet(long prng_seed) {
         this.prng = new Random(prng_seed);
         this.graph = new HashSet<Node>();
         this.remove_stack = new Stack<Node>();
-        this.listener = null;
+        this.listeners = new LinkedList<ManetListener>();
     }
 
 
@@ -58,8 +58,8 @@ public abstract class Manet implements Iterable<Node>{
         return new ManetIterator(this);
     }
 
-    public void setListener(ManetListener listener) {
-        this.listener = listener;
+    public void addListener(ManetListener listener) {
+        this.listeners.add(listener);
     }
 
 
@@ -69,8 +69,8 @@ public abstract class Manet implements Iterable<Node>{
         // This is just for removal
         this.remove_stack.push(node);
 
-        if (this.listener != null) {
-            this.listener.addNodeCallback(node);
+        for (ManetListener listener : this.listeners) {
+            listener.addNodeCallback(node);
         }
     }
 
@@ -80,10 +80,13 @@ public abstract class Manet implements Iterable<Node>{
     }
 
     protected void removeNode(Node node) {
+        for (Node neighbor : node.getNeighbors()) {
+            neighbor.removeNeighbor(node);
+        }
         this.graph.remove(node);
 
-        if (this.listener != null) {
-            this.listener.removeNodeCallback(node);
+        for (ManetListener listener : this.listeners) {
+            listener.removeNodeCallback(node);
         }
     }
 }

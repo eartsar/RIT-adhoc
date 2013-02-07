@@ -373,7 +373,7 @@ public class TORAWrapper extends ManetWrapper {
     }
     
     
-    public int getRecTotal() {
+    public int getTotalPacketsRecieved() {
     	int total = getQRYtotal() + getUPDtotal();
     	return total;
     }

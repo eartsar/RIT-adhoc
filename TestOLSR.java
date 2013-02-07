@@ -6,15 +6,16 @@ public class TestOLSR {
     public static void main(String args[]) {
         Manet network = new UniformManet(132785151);
 
-        for(int i = 0; i < 10000; i++) {
-            network.generateNode();
-            System.out.println(i);
+        network.generateNode();
+        OLSRWrapper wrapper = new OLSRWrapper(network);
+
+        for(int i = 0; i < 200; i++) {
+            wrapper.network.generateNode();
+            System.out.println(wrapper.getTotalPacketsRecieved());
         }
 
-        OLSRWrapper wrapper = new OLSRWrapper(network);
-        //wrapper.show();
 
-        Random r = new Random();
+        /*Random r = new Random();
 
         while (true) {
             Node source = wrapper.getRandomNode(r);
@@ -24,6 +25,6 @@ public class TestOLSR {
                 break;
             }
             System.out.println(route.size());
-        }
+        }*/
     }
 }
