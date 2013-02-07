@@ -136,8 +136,8 @@ public class TORAWrapper extends ManetWrapper {
         	}
         }
         
-      //DEBUG:
-        System.out.println("overhead total: " + getRecTotal());
+    //DEBUG:
+       // System.out.println("overhead total: " + getRecTotal());
         
         // If we get here then that means it's not a fully connected graph. That's bad.
 //        System.out.println("Error - Could not reach destination.");
