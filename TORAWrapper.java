@@ -111,6 +111,7 @@ public class TORAWrapper extends ManetWrapper {
         	//Find path to return
         	
         	//return Shortest path
+        	result = this.listOfPaths.get(0);
         	int shortestLength = this.listOfPaths.get(0).size();
         	for (LinkedList<Node> linkedList : this.listOfPaths) {
 				if (shortestLength > linkedList.size()) {
