@@ -48,7 +48,7 @@ public class RemoveNodeTest {
                 network.removeLastNode();
 
                 // GET OVERHEAD HERE
-                int tora_overhead = tora.getRecTotal();
+                int tora_overhead = tora.getTotalPacketsRecieved();
                 int olsr_overhead = olsr.getTotalPacketsRecieved();
 
                 System.out.println("TORA: " + tora_overhead + "   OLSR: " + olsr_overhead);

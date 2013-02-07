@@ -107,6 +107,8 @@ public class OLSRWrapper extends ManetWrapper {
         LinkedList<Node> path = new LinkedList<Node>();
 
         while (current != null) {
+            int overhead = tc_recv_counter.get(current);
+            tc_recv_counter.put(current, overhead + 1);
             current = predecessors.get(current);
             path.push(current);
         }
@@ -325,6 +327,11 @@ public class OLSRWrapper extends ManetWrapper {
         csclPlot.getFrame().setVisible(true);
     }
 
+    public void clearMetrics() {
+        for(Node n : tc_recv_counter.keySet()) {
+            tc_recv_counter.put(n, 0);
+        }
+    }
 
     public HashSet<Node> getMPRSet() { return this.mpr_set; }
     public int getManetSize() { return this.network.getGraph().size(); }
