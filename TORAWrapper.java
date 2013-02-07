@@ -108,6 +108,7 @@ public class TORAWrapper extends ManetWrapper {
 //            this.totUPD_count += current.getNeighbors().size();
         }
 
+
         if (this.listOfPaths != null) {
         	//Find path to return
         	

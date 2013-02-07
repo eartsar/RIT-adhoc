@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import edu.rit.numeric.ListSeries;
 import edu.rit.numeric.ListXYSeries;
 import edu.rit.numeric.plot.Plot;
@@ -9,7 +10,7 @@ import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
-public class PingOverheadTest {
+public class PingThroughputTest {
 
     public static void main(String args[]) {
         int num_tests = 5;
@@ -46,20 +47,15 @@ public class PingOverheadTest {
                 ListSeries olsrBSeries = new ListSeries();
 
                 for (int trial = 0; trial < num_trials; trial++) {
-                    olsr.clearMetrics();
-                    tora.clearMetrics();
-                    
+
                     Node source = olsr.getRandomNode(node_prng);
                     Node destination = olsr.getRandomNode(node_prng);
 
-                    olsr.ping(source, destination);
-                    tora.ping(source, destination);
-                    
-                    int tora_overhead = tora.getTotalPacketsRecieved();
-                    int olsr_overhead = olsr.getTotalPacketsRecieved();
+                    LinkedList<Node> olsr_path = olsr.ping(source, destination);
+                    LinkedList<Node> tora_path = tora.ping(source, destination);
 
-                    toraBSeries.add(tora_overhead);
-                    olsrBSeries.add(olsr_overhead);
+                    toraBSeries.add(tora_path.size());
+                    olsrBSeries.add(olsr_path.size());
                 }
 
                 Series.Stats toraTrialsStats = toraBSeries.stats();
