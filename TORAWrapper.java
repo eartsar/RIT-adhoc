@@ -16,6 +16,11 @@ public class TORAWrapper extends ManetWrapper {
     HashMap<Node, Integer> UPD_sent_counter;
     HashMap<Node, Integer> UPD_rec_counter;
     
+    int removedNodes_QRY_sent_count;
+    int removedNodes_QRY_rec_count;
+    int removedNodes_UPD_sent_count;
+    int removedNodes_UPD_rec_count;
+    
     //Internal DAG structure
     LinkedList<LinkedList<Node>> listOfPaths;
     
@@ -39,8 +44,14 @@ public class TORAWrapper extends ManetWrapper {
     	
     	this.listOfPaths = new LinkedList<LinkedList<Node>>();
     	
-    	this.totQRY_count = 0;
-    	this.totUPD_count = 0;
+    	this.removedNodes_QRY_sent_count = 0;
+    	this.removedNodes_QRY_rec_count = 0;
+    	this.removedNodes_UPD_sent_count = 0;
+    	this.removedNodes_UPD_rec_count = 0;
+    	
+    	
+//    	this.totQRY_count = 0;
+//    	this.totUPD_count = 0;
     	
     	//Represents the RRbit, true=node already received qry; false=not received qry
 //    	this.route_required_Bit = new HashMap<Node, Boolean>();
@@ -360,8 +371,8 @@ public class TORAWrapper extends ManetWrapper {
     public int getQRYtotal() {
     	int result = 0;
     	
+    	//Add overhead for all current nodes
     	for (Node currentNode : network) {
-    		
 //			result += this.QRY_sent_counter.get(currentNode);
 			if (this.QRY_rec_counter.containsKey(currentNode)) {
 	    		result += this.QRY_rec_counter.get(currentNode) + 1;
@@ -370,6 +381,8 @@ public class TORAWrapper extends ManetWrapper {
 	    		continue;
 	    	}
 		}
+    	//Add overhead for removed nodes
+    	result += this.removedNodes_QRY_rec_count;
     	
     	return result;
     }
@@ -378,6 +391,7 @@ public class TORAWrapper extends ManetWrapper {
     public int getUPDtotal() {
     	int result = 0;
 
+    	//Add overhead for all current nodes
     	for (Node currentNode : network) {
 //    		result += this.UPD_sent_counter.get(currentNode);
     		if (this.UPD_rec_counter.containsKey(currentNode)) {
@@ -387,7 +401,10 @@ public class TORAWrapper extends ManetWrapper {
 	    		continue;
 	    	}
     	}
-
+    	
+    	//Add overhead for removed nodes
+    	result += this.removedNodes_UPD_rec_count;
+    	
     	return result;
     }
     
@@ -426,6 +443,12 @@ public class TORAWrapper extends ManetWrapper {
 //		HashSet<Node> neighbors = node.getNeighbors();
 		
 		boolean recalcRoute = false;
+		
+		//Add the overhead of the node that was just deleted to a count so we don't lose it
+		this.removedNodes_QRY_sent_count += this.QRY_sent_counter.get(node);
+    	this.removedNodes_QRY_rec_count += this.QRY_rec_counter.get(node);
+    	this.removedNodes_UPD_sent_count += this.UPD_sent_counter.get(node);
+    	this.removedNodes_UPD_rec_count += this.UPD_rec_counter.get(node);
 		
 		//Get every path that contains the deleted node
     	HashSet<LinkedList<Node>> pathsToModify = new HashSet<LinkedList<Node>>();
