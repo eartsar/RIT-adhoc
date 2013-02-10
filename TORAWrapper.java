@@ -115,11 +115,11 @@ public class TORAWrapper extends ManetWrapper {
             }
         }
         
-        if (this.listOfPaths != null) {
+        if ((this.listOfPaths != null) && (this.listOfPaths.size() != 0)) {
         	//Find path to return
         	
         	//return Shortest path
-        	result = this.listOfPaths.get(0);
+        	result = this.listOfPaths.getFirst();
         	int shortestLength = this.listOfPaths.get(0).size();
         	for (LinkedList<Node> linkedList : this.listOfPaths) {
 				if (shortestLength > linkedList.size()) {
@@ -372,17 +372,20 @@ public class TORAWrapper extends ManetWrapper {
     	int result = 0;
     	
     	//Add overhead for all current nodes
-    	for (Node currentNode : network) {
-//			result += this.QRY_sent_counter.get(currentNode);
-			if (this.QRY_rec_counter.containsKey(currentNode)) {
-	    		result += this.QRY_rec_counter.get(currentNode) + 1;
-	    	}
-	    	else {
-	    		continue;
-	    	}
+    	for (Node key : this.QRY_rec_counter.keySet()) {
+			result += this.QRY_rec_counter.get(key);
 		}
-    	//Add overhead for removed nodes
-    	result += this.removedNodes_QRY_rec_count;
+//    	for (Node currentNode : network) {
+////			result += this.QRY_sent_counter.get(currentNode);
+//			if (this.QRY_rec_counter.containsKey(currentNode)) {
+//	    		result += this.QRY_rec_counter.get(currentNode) + 1;
+//	    	}
+//	    	else {
+//	    		continue;
+//	    	}
+//		}
+//    	//Add overhead for removed nodes
+//    	result += this.removedNodes_QRY_rec_count;
     	
     	return result;
     }
@@ -392,18 +395,21 @@ public class TORAWrapper extends ManetWrapper {
     	int result = 0;
 
     	//Add overhead for all current nodes
-    	for (Node currentNode : network) {
-//    		result += this.UPD_sent_counter.get(currentNode);
-    		if (this.UPD_rec_counter.containsKey(currentNode)) {
-	    		result += this.UPD_rec_counter.get(currentNode) + 1;
-	    	}
-	    	else {
-	    		continue;
-	    	}
-    	}
-    	
-    	//Add overhead for removed nodes
-    	result += this.removedNodes_UPD_rec_count;
+    	for (Node key : this.UPD_rec_counter.keySet()) {
+			result += this.UPD_rec_counter.get(key);
+		}
+//    	for (Node currentNode : network) {
+////    		result += this.UPD_sent_counter.get(currentNode);
+//    		if (this.UPD_rec_counter.containsKey(currentNode)) {
+//	    		result += this.UPD_rec_counter.get(currentNode) + 1;
+//	    	}
+//	    	else {
+//	    		continue;
+//	    	}
+//    	}
+//    	
+//    	//Add overhead for removed nodes
+//    	result += this.removedNodes_UPD_rec_count;
     	
     	return result;
     }
