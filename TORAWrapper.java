@@ -29,8 +29,8 @@ public class TORAWrapper extends ManetWrapper {
     HashMap<Node, HashSet<Node>> routeReq_Dest_bit;
 	
 	
-    public TORAWrapper(Manet network) {
-    	super(network);
+    public TORAWrapper(Manet network, long ping_seed) {
+    	super(network, ping_seed);
     	
     	this.QRY_sent_counter = new HashMap<Node, Integer>();
     	this.QRY_rec_counter = new HashMap<Node, Integer>();
@@ -135,16 +135,10 @@ public class TORAWrapper extends ManetWrapper {
 //        		this.UPD_rec_counter.put(entry.getValue(), newRec);
         	}
         }
-        
-    //DEBUG:
-       // System.out.println("overhead total: " + getRecTotal());
-        
-        // If we get here then that means it's not a fully connected graph. That's bad.
-//        System.out.println("Error - Could not reach destination.");
-//        return null;
+
         return result;
-        
     }
+
 
     // Path generation helper for ping
     private LinkedList<Node> constructPath(HashMap<Node, Node> predecessors, Node destination) {
@@ -169,6 +163,7 @@ public class TORAWrapper extends ManetWrapper {
     		this.QRY_sent_counter.put(currentNode, 0);
     	}
     }
+
     
     public void incQRYRec(Node currentNode) {
     	if (this.QRY_rec_counter.containsKey(currentNode)) {
@@ -191,6 +186,7 @@ public class TORAWrapper extends ManetWrapper {
     	}
     }
     
+
     public void incUPDRec(Node currentNode) {
     	if (this.UPD_rec_counter.containsKey(currentNode)) {
     		int tmp = this.UPD_rec_counter.get(currentNode) + 1;
@@ -212,7 +208,6 @@ public class TORAWrapper extends ManetWrapper {
     	//HashSet to hold backrack process from dest > source
     	LinkedHashSet<Node> backtrack = new LinkedHashSet<Node>();
     	
-//    	System.out.println("Called: " + source.toString());
     	if (source == destination) {
     		//Start backtrack process
     		backtrack.add(source);
@@ -229,7 +224,6 @@ public class TORAWrapper extends ManetWrapper {
     					if (sendQuery(source, destination, neighbor) == true) {
     						//add to HashSet to flood to child nodes
     						newSources.add(neighbor);
-//    						System.out.println("new neighbors: " + neighbor.toString());
     					}
     					else {
     						//Node already received QRY
@@ -238,7 +232,6 @@ public class TORAWrapper extends ManetWrapper {
 
     				//loop through the hashset created above:
     				for (Node newNeighbor : newSources) {
-//    					System.out.println("calling neighbors: " + newNeighbor.toString());
     					backtrack =  recurseQueries(newNeighbor, destination);
     					if(backtrack == null) {
 //    						return null;
@@ -253,7 +246,6 @@ public class TORAWrapper extends ManetWrapper {
     		}
     	}
     	
-//    	return neighbors;
     	return null;
     	
     }
@@ -282,17 +274,6 @@ public class TORAWrapper extends ManetWrapper {
     	
     	return unmetNeighborFlag;
     }
-    
-    
-//    public boolean isLastNeighbor(Node source) {
-//    	//A node is the last one if it only has 1 neighbor?
-//    	
-//    	HashSet<Node> neighbors = source.getNeighbors();
-////    	if (neighbors.size(source) == 1)
-//    	
-//    	return false;
-//    }
-    
     
     
     /**
@@ -422,14 +403,6 @@ public class TORAWrapper extends ManetWrapper {
     	this.totQRY_count = 0;
     	this.totUPD_count = 0;
     }
-    
-
-	@Override
-	public void floodPing() {
-		// TODO Auto-generated method stub
-		
-	}
-
 
 
 	@Override
@@ -443,9 +416,6 @@ public class TORAWrapper extends ManetWrapper {
 //			int newRec = this.UPD_sent_counter.get(node);
 //			this.UPD_sent_counter.put(node, newRec);
 		}
-		
-		//Secondary also add to running total
-		//TODO
 		
 	}
 

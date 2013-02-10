@@ -22,9 +22,10 @@ public class PingOverheadTest {
         int NU = Integer.parseInt(args[1]);
         int num_tests = Integer.parseInt(args[2]);
         int num_trials = Integer.parseInt(args[3]);
+        
         long seed = Long.parseLong(args[4]);
 
-        Random node_prng = new Random(seed);
+        Random seed_generator = new Random(seed);
 
         ArrayList< ArrayList<Double> > tora_results = new ArrayList< ArrayList<Double> >(num_tests);
         ArrayList< ArrayList<Double> > olsr_results = new ArrayList< ArrayList<Double> >(num_tests);
@@ -40,7 +41,7 @@ public class PingOverheadTest {
             //olsr_results.get(test).add(0.0);
 
             // make the MANET
-            Manet network = new UniformManet(node_prng.nextInt());
+            Manet network = new UniformManet(seed_generator.nextLong());
             network.generateNode();
 
             for (int i = 1; i < NL; i++) {
@@ -48,8 +49,8 @@ public class PingOverheadTest {
             }
 
             // Wrap it with the protocols
-            TORAWrapper tora = new TORAWrapper(network);
-            OLSRWrapper olsr = new OLSRWrapper(network);
+            TORAWrapper tora = new TORAWrapper(network, seed_generator.nextLong());
+            OLSRWrapper olsr = new OLSRWrapper(network, seed_generator.nextLong());
 
             for (int i = NL; i <= NU; i++) {
                 network.generateNode();
@@ -62,8 +63,8 @@ public class PingOverheadTest {
                     olsr.clearMetrics();
                     tora.clearMetrics();
                     
-                    Node source = olsr.getRandomNode(node_prng);
-                    Node destination = olsr.getRandomNode(node_prng);
+                    Node source = olsr.getRandomNode();
+                    Node destination = olsr.getRandomNode();
 
                     olsr.ping(source, destination);
                     tora.ping(source, destination);

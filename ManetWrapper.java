@@ -7,23 +7,20 @@ import java.awt.geom.Point2D;
 
 public abstract class ManetWrapper implements ManetListener{
 
-    // Internal seed used when selecting random nodes to ping
-    final long PING_PRNG_SEED = 123456789;
     private Random selector;
-
     protected Manet network;
 
 
-    public ManetWrapper(Manet network) {
+    public ManetWrapper(Manet network, long selector_seed) {
         this.network = network;
         this.network.addListener(this);
-        selector = new Random(PING_PRNG_SEED);
+        selector = new Random(selector_seed);
     }
 
 
-    public Node getRandomNode(Random prng) {
-        double x = prng.nextDouble();
-        double y = prng.nextDouble();
+    public Node getRandomNode() {
+        double x = selector.nextDouble();
+        double y = selector.nextDouble();
         x = (x * network.WORLD_LIMIT) - (network.WORLD_LIMIT / 2);
         y = (y * network.WORLD_LIMIT) - (network.WORLD_LIMIT / 2);
 
@@ -50,7 +47,7 @@ public abstract class ManetWrapper implements ManetListener{
             return 0;
         }
 
-        Node closest_node = getRandomNode(selector);
+        Node closest_node = getRandomNode();
 
         LinkedList<Node> queue = new LinkedList<Node>();
         HashSet<Node> marked = new HashSet<Node>();
@@ -117,7 +114,6 @@ public abstract class ManetWrapper implements ManetListener{
     public Iterator<Node> iterator() { return this.network.iterator(); }
 
     public abstract LinkedList<Node> ping(Node source, Node destination);
-    public abstract void floodPing();
     public abstract void addNodeCallback(Node node);
     public abstract void removeNodeCallback(Node node);
     public abstract void clearMetrics();

@@ -41,7 +41,7 @@ public class AddNodeTest {
             //olsr_test_results.add(0);
 
             // make the MANET
-            Manet network = new UniformManet(seed_generator.nextInt());
+            Manet network = new UniformManet(seed_generator.nextLong());
             network.generateNode();
 
             for (int i = 1; i < NL; i++) {
@@ -49,8 +49,8 @@ public class AddNodeTest {
             }
 
             // Wrap it with the protocols
-            TORAWrapper tora = new TORAWrapper(network);
-            OLSRWrapper olsr = new OLSRWrapper(network);
+            TORAWrapper tora = new TORAWrapper(network, seed_generator.nextLong());
+            OLSRWrapper olsr = new OLSRWrapper(network, seed_generator.nextLong());
             
             for (int i = NL; i <= NU; i++) {
                 network.generateNode();

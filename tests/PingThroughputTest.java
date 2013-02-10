@@ -24,7 +24,7 @@ public class PingThroughputTest {
         int num_trials = Integer.parseInt(args[3]);
         long seed = Long.parseLong(args[4]);
 
-        Random node_prng = new Random(seed);
+        Random seed_generator = new Random(seed);
 
         ArrayList< ArrayList<Double> > tora_results = new ArrayList< ArrayList<Double> >(num_tests);
         ArrayList< ArrayList<Double> > olsr_results = new ArrayList< ArrayList<Double> >(num_tests);
@@ -37,12 +37,12 @@ public class PingThroughputTest {
             olsr_results.add(test, new ArrayList<Double>());
 
             // make the MANET
-            Manet network = new UniformManet(node_prng.nextInt());
+            Manet network = new UniformManet(seed_generator.nextLong());
             network.generateNode();
 
             // Wrap it with the protocols
-            TORAWrapper tora = new TORAWrapper(network);
-            OLSRWrapper olsr = new OLSRWrapper(network);
+            TORAWrapper tora = new TORAWrapper(network, seed_generator.nextLong());
+            OLSRWrapper olsr = new OLSRWrapper(network, seed_generator.nextLong());
 
 
             for (int i = 1; i < NL; i++) {
@@ -58,8 +58,8 @@ public class PingThroughputTest {
 
                 for (int trial = 0; trial < num_trials; trial++) {
 
-                    Node source = olsr.getRandomNode(node_prng);
-                    Node destination = olsr.getRandomNode(node_prng);
+                    Node source = olsr.getRandomNode();
+                    Node destination = olsr.getRandomNode();
 
                     LinkedList<Node> olsr_path = olsr.ping(source, destination);
                     LinkedList<Node> tora_path = tora.ping(source, destination);

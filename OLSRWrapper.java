@@ -9,26 +9,15 @@ import edu.rit.numeric.ListXYSeries;
 
 public class OLSRWrapper extends ManetWrapper {
 
-    // seed specifically for the MPR generation
-    final long MPR_PRNG_SEED = 1122334455;
-    final int ADD_NODE_INTERVAL_LIMIT = 8;
-    final int TC_INTERVAL = 2;
-
-    HashMap<Node, Double> tp_timer;
-
     HashMap<Node, Integer> tc_recv_counter;
-
     HashSet<Node> mpr_set;
 
-    Random mpr_prng;
 
-    public OLSRWrapper(Manet network) {
-        super(network);
-        this.tp_timer = new HashMap<Node, Double>();
+    public OLSRWrapper(Manet network, long selector_seed) {
+        super(network, selector_seed);
         this.tc_recv_counter = new HashMap<Node, Integer>();
 
-        this.mpr_prng = new Random(this.MPR_PRNG_SEED);
-        this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+        this.mpr_set = findMPRs(getRandomNode());
 
         // Initialize all the counters for metrics
         for (Node node : this.network.getGraph()) {
@@ -44,11 +33,6 @@ public class OLSRWrapper extends ManetWrapper {
         }
 
         return total;
-    }
-
-
-    public void floodPing() {
-
     }
 
 
@@ -283,7 +267,7 @@ public class OLSRWrapper extends ManetWrapper {
         }
 
         if (update) {
-            this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+            this.mpr_set = findMPRs(getRandomNode());
         }
 
 
@@ -297,7 +281,7 @@ public class OLSRWrapper extends ManetWrapper {
 
     public void removeNodeCallback(Node node) {        
         // Find new MPRs
-        this.mpr_set = findMPRs(getRandomNode(mpr_prng));
+        this.mpr_set = findMPRs(getRandomNode());
 
         int num_reps = 1;
 
@@ -305,6 +289,7 @@ public class OLSRWrapper extends ManetWrapper {
             floodTopology(mpr, num_reps);
         }
     }
+
 
     public void showMPRs() {
         Plot csclPlot = new Plot();
@@ -325,13 +310,21 @@ public class OLSRWrapper extends ManetWrapper {
         csclPlot.getFrame().setVisible(true);
     }
 
+
     public void clearMetrics() {
         for(Node n : tc_recv_counter.keySet()) {
             tc_recv_counter.put(n, 0);
         }
     }
 
-    public HashSet<Node> getMPRSet() { return this.mpr_set; }
-    public int getManetSize() { return this.network.getGraph().size(); }
+
+    public HashSet<Node> getMPRSet() {
+        return this.mpr_set;
+    }
+
+
+    public int getManetSize() {
+        return this.network.getGraph().size();
+    }
 
 }
