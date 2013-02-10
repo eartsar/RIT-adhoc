@@ -295,9 +295,7 @@ public class OLSRWrapper extends ManetWrapper {
     }
 
 
-    public void removeNodeCallback(Node node) {
-        tc_recv_counter.put(node, 0);
-        
+    public void removeNodeCallback(Node node) {        
         // Find new MPRs
         this.mpr_set = findMPRs(getRandomNode(mpr_prng));
 

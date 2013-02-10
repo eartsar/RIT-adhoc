@@ -13,10 +13,16 @@ import java.awt.Color;
 public class PingThroughputTest {
 
     public static void main(String args[]) {
-        int num_tests = 5;
-        int num_trials = 10;
-        int N = 100;
-        long seed = 12345679;
+        if (args.length != 5) {
+            System.out.println("Usage: java AddNodeTest <NL> <NU> <tests> <trials> <seed>");
+            System.exit(1);
+        }
+
+        int NL = Integer.parseInt(args[0]);
+        int NU = Integer.parseInt(args[1]);
+        int num_tests = Integer.parseInt(args[2]);
+        int num_trials = Integer.parseInt(args[3]);
+        long seed = Long.parseLong(args[4]);
 
         Random node_prng = new Random(seed);
 
@@ -25,11 +31,10 @@ public class PingThroughputTest {
 
 
         for (int test = 0; test < num_tests; test++) {
+            System.out.println("Test " + (test + 1) + "...");
+
             tora_results.add(test, new ArrayList<Double>());
             olsr_results.add(test, new ArrayList<Double>());
-
-            tora_results.get(test).add(0, 0.0);
-            olsr_results.get(test).add(0, 0.0);
 
             // make the MANET
             Manet network = new UniformManet(node_prng.nextInt());
@@ -39,7 +44,12 @@ public class PingThroughputTest {
             TORAWrapper tora = new TORAWrapper(network);
             OLSRWrapper olsr = new OLSRWrapper(network);
 
-            for (int i = 1; i <= N; i++) {
+
+            for (int i = 1; i < NL; i++) {
+                network.generateNode();
+            }
+
+            for (int i = NL; i <= NU; i++) {
                 network.generateNode();
 
                 // GET OVERHEAD HERE
@@ -61,23 +71,18 @@ public class PingThroughputTest {
                 Series.Stats toraTrialsStats = toraBSeries.stats();
                 Series.Stats olsrTrialsStats = olsrBSeries.stats();
 
-                System.out.println(toraTrialsStats.mean + " VS " + olsrTrialsStats.mean);
+                //System.out.println(toraTrialsStats.mean + " VS " + olsrTrialsStats.mean);
 
-                tora_results.get(test).add(i, toraTrialsStats.mean);
-                olsr_results.get(test).add(i, olsrTrialsStats.mean);
+                tora_results.get(test).add(toraTrialsStats.mean);
+                olsr_results.get(test).add(olsrTrialsStats.mean);
             }
         }
 
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
 
-        for (int n = 0; n < N; n++ ){
-            if(n == 0) {
-                tora_averages.add(n, 0);
-                olsr_averages.add(n, 0);
-                continue;
-            }
-
+        for (int n = NL; n < NU; n++ ){
+            
             ListSeries toraBSeries = new ListSeries();
             ListSeries olsrBSeries = new ListSeries();
 
@@ -89,14 +94,17 @@ public class PingThroughputTest {
             Series.Stats toraTestStats = toraBSeries.stats();
             Series.Stats olsrTestStats = olsrBSeries.stats();
 
-            tora_averages.add(n, toraTestStats.mean);
-            olsr_averages.add(n, olsrTestStats.mean);
+            tora_averages.add(n - NL, toraTestStats.mean);
+            olsr_averages.add(n - NL, olsrTestStats.mean);
         }
+
+        double[] ttest = Statistics.tTestUnequalVariance(tora_averages.ySeries(), olsr_averages.ySeries());
+        System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
          .xAxisTitle ("Dimension N")
-         .yAxisTitle ("Overhead")
+         .yAxisTitle ("Number of Hops")
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)
          .seriesColor (Color.RED)

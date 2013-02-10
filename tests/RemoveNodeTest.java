@@ -4,6 +4,8 @@ import edu.rit.numeric.ListSeries;
 import edu.rit.numeric.ListXYSeries;
 import edu.rit.numeric.plot.Plot;
 import edu.rit.numeric.plot.Strokes;
+import edu.rit.numeric.Series;
+import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
@@ -21,6 +23,8 @@ public class RemoveNodeTest {
 
 
         for (int test = 0; test < num_tests; test++) {
+            System.out.println("Test " + (test + 1) + "...");
+
             tora_results.add(test, new ArrayList<Integer>(N));
             olsr_results.add(test, new ArrayList<Integer>(N));
 
@@ -36,22 +40,20 @@ public class RemoveNodeTest {
 
             for (int i = 1; i <= N; i++) {
                 network.generateNode();
-                tora_test_results.add(i, 0);
-                olsr_test_results.add(i, 0);
             }
 
             // Wrap it with the protocols
             TORAWrapper tora = new TORAWrapper(network);
             OLSRWrapper olsr = new OLSRWrapper(network);
 
-            for (int i = N; i >= 1; i--) {
+            for (int i = 1; i <= N; i++) {
                 network.removeLastNode();
 
                 // GET OVERHEAD HERE
                 int tora_overhead = tora.getTotalPacketsRecieved();
                 int olsr_overhead = olsr.getTotalPacketsRecieved();
 
-                System.out.println("TORA: " + tora_overhead + "   OLSR: " + olsr_overhead);
+                // System.out.println("TORA: " + tora_overhead + "   OLSR: " + olsr_overhead);
 
                 tora_test_results.add(i, tora_overhead);
                 olsr_test_results.add(i, olsr_overhead);
@@ -63,7 +65,6 @@ public class RemoveNodeTest {
         ListXYSeries olsr_averages = new ListXYSeries();
 
         for (int i = 0; i <= N; i++) {
-
             double n_tora_average = 0.0;
             double n_olsr_average = 0.0;
 
@@ -78,9 +79,12 @@ public class RemoveNodeTest {
             olsr_averages.add(i, n_olsr_average);
         }
 
+        double[] ttest = Statistics.tTestUnequalVariance(tora_averages.ySeries(), olsr_averages.ySeries());
+        System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
+
         new Plot()
-         .xAxisTitle ("Dimension N")
-         .yAxisTitle ("Overhead")
+         .xAxisTitle ("Number of Nodes Removed")
+         .yAxisTitle ("Number of Messages Recieved")
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)
          .seriesColor (Color.RED)
