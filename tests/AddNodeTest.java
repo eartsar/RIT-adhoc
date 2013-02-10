@@ -36,9 +36,7 @@ public class AddNodeTest {
 
             ArrayList<Integer> tora_test_results = tora_results.get(test);
             ArrayList<Integer> olsr_test_results = olsr_results.get(test);
-
-            //tora_test_results.add(0);
-            //olsr_test_results.add(0);
+            
 
             // make the MANET
             Manet network = new UniformManet(seed_generator.nextLong());
