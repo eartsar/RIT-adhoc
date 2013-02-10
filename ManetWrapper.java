@@ -2,22 +2,44 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Random;
-import java.lang.Math;
 import java.awt.geom.Point2D;
 
+
+/**
+ * ManetWrapper - abstract class that provides the basic functionality 
+ * 	needed for simulating a routing protocol.
+ * 
+ * Uses Manet to represent network of nodes
+ * 	
+ * 
+ *
+ */
 public abstract class ManetWrapper implements ManetListener{
 
     private Random selector;
     protected Manet network;
 
 
+    /**
+     * Constructor ManetWrapper(network, selector_seed)
+     * 
+     * @param network - Manet containing network of nodes
+     * @param selector_seed - Long number for seeding random
+     */
     public ManetWrapper(Manet network, long selector_seed) {
         this.network = network;
         this.network.addListener(this);
         selector = new Random(selector_seed);
     }
 
-
+    
+    /**
+     * getRandomNode()
+     * 	Generates a random node in the graph that is guaranteed to be 
+     * 	connected to another node already in the graph.
+     *  
+     * @return
+     */
     public Node getRandomNode() {
         double x = selector.nextDouble();
         double y = selector.nextDouble();
