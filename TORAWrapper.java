@@ -416,11 +416,11 @@ public class TORAWrapper extends ManetWrapper {
     
     public void clearMetrics() {
     	int zero = 0;
-    	for (Node currentNode : this.network) {
-			this.QRY_rec_counter.put(currentNode, zero);
-			this.QRY_sent_counter.put(currentNode, zero);
-			this.UPD_rec_counter.put(currentNode, zero);
-			this.UPD_sent_counter.put(currentNode, zero);
+    	for (Node key : this.UPD_rec_counter.keySet()) {
+			this.QRY_rec_counter.put(key, zero);
+			this.QRY_sent_counter.put(key, zero);
+			this.UPD_rec_counter.put(key, zero);
+			this.UPD_sent_counter.put(key, zero);
 		}
     	
     	this.totQRY_count = 0;
@@ -445,98 +445,103 @@ public class TORAWrapper extends ManetWrapper {
 
 	@Override
 	public void removeNodeCallback(Node node) {
-
-//		HashSet<Node> neighbors = node.getNeighbors();
 		
-		boolean recalcRoute = false;
-		
-		//Add the overhead of the node that was just deleted to a count so we don't lose it
-		this.removedNodes_QRY_sent_count += this.QRY_sent_counter.get(node);
-    	this.removedNodes_QRY_rec_count += this.QRY_rec_counter.get(node);
-    	this.removedNodes_UPD_sent_count += this.UPD_sent_counter.get(node);
-    	this.removedNodes_UPD_rec_count += this.UPD_rec_counter.get(node);
-		
-		//Get every path that contains the deleted node
-    	HashSet<LinkedList<Node>> pathsToModify = new HashSet<LinkedList<Node>>();
-    	HashSet<LinkedList<Node>> unmodifiedPaths = new HashSet<LinkedList<Node>>();
-		
-		//Node removed from network
-		//	first check: involved in path to destination?
-		//TODO check list of LinkedLists
-    	for (LinkedList<Node> linkedList : this.listOfPaths) {
-//    		System.out.println("looking for: " + node.toString());
-//    		System.out.println("Inside this list: ");
-//    		for (Node node2 : linkedList) {
-//    			if (node2 != null) {
-//    				System.out.println(node2.toString());
+		for (Node neighbor : node.getNeighbors()) {
+			incUPDSent(neighbor);
+			incUPDRec(node);
+		}
+//
+////		HashSet<Node> neighbors = node.getNeighbors();
+//		
+//		boolean recalcRoute = false;
+//		
+//		//Add the overhead of the node that was just deleted to a count so we don't lose it
+//		this.removedNodes_QRY_sent_count += this.QRY_sent_counter.get(node);
+//    	this.removedNodes_QRY_rec_count += this.QRY_rec_counter.get(node);
+//    	this.removedNodes_UPD_sent_count += this.UPD_sent_counter.get(node);
+//    	this.removedNodes_UPD_rec_count += this.UPD_rec_counter.get(node);
+//		
+//		//Get every path that contains the deleted node
+//    	HashSet<LinkedList<Node>> pathsToModify = new HashSet<LinkedList<Node>>();
+//    	HashSet<LinkedList<Node>> unmodifiedPaths = new HashSet<LinkedList<Node>>();
+//		
+//		//Node removed from network
+//		//	first check: involved in path to destination?
+//		//TODO check list of LinkedLists
+//    	for (LinkedList<Node> linkedList : this.listOfPaths) {
+////    		System.out.println("looking for: " + node.toString());
+////    		System.out.println("Inside this list: ");
+////    		for (Node node2 : linkedList) {
+////    			if (node2 != null) {
+////    				System.out.println(node2.toString());
+////    			}
+////			}
+//    		if (linkedList.contains(node)) {
+//    			pathsToModify.add(linkedList);
+//    			recalcRoute = true;
+//    		}
+//    		else {
+//    			unmodifiedPaths.add(linkedList);
+//    		}
+//    	}
+//    	
+//    	
+//    	//Variables to assist reverse path updating
+//    	//HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
+//    	HashSet<Node> visited = new HashSet<Node>();
+//        LinkedList<Node> queue = new LinkedList<Node>();
+//        Stack<Node> stack = new Stack<Node>();
+////        LinkedList<Node> result = new LinkedList<>();
+//    	
+//    	if (recalcRoute) {
+//    		//Iterate up each path, add each node previous to the deleted node to the stack
+//    		for (LinkedList<Node> revPath : pathsToModify) {
+//				
+//    			for (Node prevNode : revPath) {
+//    				if (prevNode != null) {
+//    					if (prevNode != node) {
+//    						stack.push(prevNode);
+//    					}
+//    					else {
+//    						//TODO test
+//    						break;
+//    					}
+//    				}
+//				}
+//    			
+//    			boolean nodesNotUpdated = true;
+//    			while (!stack.isEmpty()) {
+//    				Node current = stack.pop();
+//    				
+//    				//check if there were any paths that weren't modified
+//    				if (unmodifiedPaths.size() == 0) {
+//    					//All paths were modified, add UPD packet for each node
+//						incUPDRec(current);
+//						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
+//    				}
+//    				else {
+//    					boolean usedInUnmodifiedPath = false;
+//    					for (LinkedList<Node> compareList : unmodifiedPaths) {
+//    						if (compareList.contains(current)) {
+//    							continue;
+//    						}
+//    						else {
+//    							usedInUnmodifiedPath = true;
+//    							break;
+//    						}	
+//    					}
+//
+//    					if(usedInUnmodifiedPath) {
+//    						//add UPD packet
+//    						incUPDRec(current);
+//    						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
+//    					}
+//    				}
 //    			}
-//			}
-    		if (linkedList.contains(node)) {
-    			pathsToModify.add(linkedList);
-    			recalcRoute = true;
-    		}
-    		else {
-    			unmodifiedPaths.add(linkedList);
-    		}
-    	}
-    	
-    	
-    	//Variables to assist reverse path updating
-    	//HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
-    	HashSet<Node> visited = new HashSet<Node>();
-        LinkedList<Node> queue = new LinkedList<Node>();
-        Stack<Node> stack = new Stack<Node>();
-//        LinkedList<Node> result = new LinkedList<>();
-    	
-    	if (recalcRoute) {
-    		//Iterate up each path, add each node previous to the deleted node to the stack
-    		for (LinkedList<Node> revPath : pathsToModify) {
-				
-    			for (Node prevNode : revPath) {
-    				if (prevNode != null) {
-    					if (prevNode != node) {
-    						stack.push(prevNode);
-    					}
-    					else {
-    						//TODO test
-    						break;
-    					}
-    				}
-				}
-    			
-    			boolean nodesNotUpdated = true;
-    			while (!stack.isEmpty()) {
-    				Node current = stack.pop();
-    				
-    				//check if there were any paths that weren't modified
-    				if (unmodifiedPaths.size() == 0) {
-    					//All paths were modified, add UPD packet for each node
-						incUPDRec(current);
-						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
-    				}
-    				else {
-    					boolean usedInUnmodifiedPath = false;
-    					for (LinkedList<Node> compareList : unmodifiedPaths) {
-    						if (compareList.contains(current)) {
-    							continue;
-    						}
-    						else {
-    							usedInUnmodifiedPath = true;
-    							break;
-    						}	
-    					}
-
-    					if(usedInUnmodifiedPath) {
-    						//add UPD packet
-    						incUPDRec(current);
-    						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
-    					}
-    				}
-    			}
-    			
-    			//loop to next path that contains the deleted node
-    		}
-    	}
+//    			
+//    			//loop to next path that contains the deleted node
+//    		}
+//    	}
 	}
 
 
