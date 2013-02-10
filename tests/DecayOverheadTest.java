@@ -79,7 +79,7 @@ public class DecayOverheadTest {
                 int tora_overhead = tora.getTotalPacketsRecieved();
                 int olsr_overhead = olsr.getTotalPacketsRecieved();
 
-                // System.out.println("TORA: " + tora_overhead + "   OLSR: " + olsr_overhead);
+                 System.out.println("TORA: " + tora_overhead + "   OLSR: " + olsr_overhead);
 
                 tora_test_results.add(tora_overhead);
                 olsr_test_results.add(olsr_overhead);
@@ -89,6 +89,9 @@ public class DecayOverheadTest {
         // Now that we ran through the tests, time to do some stats
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
+
+        System.out.println("      Overhead Averages         ");
+        System.out.println("N Nodes     TORA        OLSR    ");
 
         for (int i = NL; i < NU; i++) {
             double n_tora_average = 0.0;
@@ -103,8 +106,11 @@ public class DecayOverheadTest {
 
             tora_averages.add(i, n_tora_average);
             olsr_averages.add(i, n_olsr_average);
+
+            System.out.printf ("%3d       %7.2f    %7.2f %n", i, n_tora_average, n_olsr_average);
         }
 
+        System.out.println("-----------------------------------------");
         double[] ttest = Statistics.tTestUnequalVariance(tora_averages.ySeries(), olsr_averages.ySeries());
         System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
 

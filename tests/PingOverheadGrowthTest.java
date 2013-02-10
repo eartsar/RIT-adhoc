@@ -110,6 +110,10 @@ public class PingOverheadGrowthTest {
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
 
+        System.out.println("      Overhead Averages         ");
+        System.out.println("N Nodes     TORA        OLSR    ");
+        
+
         for (int n = NL; n <= NU; n++ ){
             if(n == 0) {
                 tora_averages.add(n, 0);
@@ -130,8 +134,11 @@ public class PingOverheadGrowthTest {
 
             tora_averages.add(n, toraTestStats.mean);
             olsr_averages.add(n, olsrTestStats.mean);
+
+            System.out.printf ("%3d       %7.2f    %7.2f %n", n, toraTestStats.mean, olsrTestStats.mean);
         }
 
+        System.out.println("-----------------------------------------");
         double[] ttest = Statistics.tTestUnequalVariance(tora_averages.ySeries(), olsr_averages.ySeries());
         System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
         

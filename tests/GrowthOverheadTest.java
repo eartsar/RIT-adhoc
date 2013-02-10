@@ -88,6 +88,10 @@ public class GrowthOverheadTest {
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
 
+        System.out.println("      Overhead Averages         ");
+        System.out.println("N Nodes     TORA        OLSR    ");
+
+
         int index = 0;
         for (int i = NL; i <= NU; i++) {
 
@@ -103,14 +107,18 @@ public class GrowthOverheadTest {
 
             tora_averages.add(i, n_tora_average);
             olsr_averages.add(i, n_olsr_average);
+    
+            System.out.printf ("%3d       %7.2f    %7.2f %n", i, n_tora_average, n_olsr_average);
 
             index++;
         }
 
+        System.out.println("-----------------------------------------");
         double[] ttest = Statistics.tTestUnequalVariance(tora_averages.ySeries(), olsr_averages.ySeries());
         System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
 
         new Plot()
+         .plotTitle ("Message Overhead during Network Growth")
          .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Messages Recieved")
          .seriesStroke (Strokes.solid (1))

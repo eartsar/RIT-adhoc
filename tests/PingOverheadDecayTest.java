@@ -133,6 +133,7 @@ public class PingOverheadDecayTest {
             i++;
         }
 
+        System.out.println("-----------------------------------------");
         double[] ttest = Statistics.tTestUnequalVariance(tora_averages.ySeries(), olsr_averages.ySeries());
         System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
         
