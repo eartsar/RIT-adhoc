@@ -68,6 +68,9 @@ public class PingThroughputGrowthTest {
             TORAWrapper tora = new TORAWrapper(network, seed_generator.nextLong());
             OLSRWrapper olsr = new OLSRWrapper(network, seed_generator.nextLong());
 
+            tora_results.get(test).add(1.0);
+            olsr_results.get(test).add(1.0);
+
 
             for (int i = 1; i < NL; i++) {
                 network.generateNode();
@@ -105,14 +108,18 @@ public class PingThroughputGrowthTest {
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
 
-        for (int n = NL; n < NU; n++ ){
+        System.out.println("      Throughput Averages       ");
+        System.out.println("N Nodes     TORA        OLSR    ");
+
+        int i = 0;
+        for (int n = NL; n <= NU; n++ ){
             
             ListSeries toraBSeries = new ListSeries();
             ListSeries olsrBSeries = new ListSeries();
 
             for (int t = 0; t < num_tests; t++) {
-                toraBSeries.add(tora_results.get(t).get(n));
-                olsrBSeries.add(olsr_results.get(t).get(n));
+                toraBSeries.add(tora_results.get(t).get(i));
+                olsrBSeries.add(olsr_results.get(t).get(i));
             }
 
             Series.Stats toraTestStats = toraBSeries.stats();
@@ -120,6 +127,10 @@ public class PingThroughputGrowthTest {
 
             tora_averages.add(n - NL, toraTestStats.mean);
             olsr_averages.add(n - NL, olsrTestStats.mean);
+
+            System.out.printf ("%3d       %7.2f    %7.2f %n", n, toraTestStats.mean, olsrTestStats.mean);
+
+            i++;
         }
 
         System.out.println("-----------------------------------------");
@@ -128,6 +139,7 @@ public class PingThroughputGrowthTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
+         .plotTitle ("Throughput during Pings (Growth)")
          .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Number of Hops")
          .seriesStroke (Strokes.solid (1))

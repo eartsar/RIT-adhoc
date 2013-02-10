@@ -109,6 +109,9 @@ public class PingOverheadDecayTest {
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
 
+        System.out.println("      Overhead Averages         ");
+        System.out.println("N Nodes     TORA        OLSR    ");
+
         int i = 0;
         for (int n = NU; n >= NL; n--){
             if(n == 0) {
@@ -131,6 +134,8 @@ public class PingOverheadDecayTest {
             tora_averages.add(n, toraTestStats.mean);
             olsr_averages.add(n, olsrTestStats.mean);
             i++;
+
+            System.out.printf ("%3d       %7.2f    %7.2f %n", n, toraTestStats.mean, olsrTestStats.mean);
         }
 
         System.out.println("-----------------------------------------");
@@ -139,6 +144,7 @@ public class PingOverheadDecayTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
+         .plotTitle ("Overhead during Pings (Decay)")
          .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Packets Recieved")
          .xAxisStart (NU)

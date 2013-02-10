@@ -75,6 +75,8 @@ public class PingThroughputDecayTest {
             TORAWrapper tora = new TORAWrapper(network, seed_generator.nextLong());
             OLSRWrapper olsr = new OLSRWrapper(network, seed_generator.nextLong());
 
+            
+
             for (int i = NU; i >= NL; i--) {
                 network.removeLastNode();
 
@@ -92,8 +94,8 @@ public class PingThroughputDecayTest {
                     LinkedList<Node> olsr_path = olsr.ping(source, destination);
                     LinkedList<Node> tora_path = tora.ping(source, destination);
                     
-                    toraBSeries.add(olsr_path.size());
-                    olsrBSeries.add(tora_path.size());
+                    toraBSeries.add(tora_path.size());
+                    olsrBSeries.add(olsr_path.size());
                 }
 
                 Series.Stats toraTrialsStats = toraBSeries.stats();
@@ -106,6 +108,9 @@ public class PingThroughputDecayTest {
 
         ListXYSeries tora_averages = new ListXYSeries();
         ListXYSeries olsr_averages = new ListXYSeries();
+
+        System.out.println("      Throughput Averages       ");
+        System.out.println("N Nodes     TORA        OLSR    ");
 
         int i = 0;
         for (int n = NU; n >= NL; n--){
@@ -128,6 +133,8 @@ public class PingThroughputDecayTest {
 
             tora_averages.add(n, toraTestStats.mean);
             olsr_averages.add(n, olsrTestStats.mean);
+
+            System.out.printf ("%3d       %7.2f    %7.2f %n", n, toraTestStats.mean, olsrTestStats.mean);
             i++;
         }
 
@@ -137,6 +144,7 @@ public class PingThroughputDecayTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
+         .plotTitle ("Throughput during Pings (Decay)")
          .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Number of Hops")
          .xAxisStart (NU)
