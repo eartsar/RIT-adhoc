@@ -35,6 +35,7 @@ public class PingOverheadDecayTest {
         }
         catch (Exception e) {
             System.out.println("Error - All arguments must be numerical.");
+            System.exit(1);
         }
 
         if (NL < 1) {
@@ -137,10 +138,10 @@ public class PingOverheadDecayTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
-         .xAxisTitle ("Number of Nodes")
+         .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Packets Recieved")
-         .xAxisStart (100)
-         .xAxisEnd (0)
+         .xAxisStart (NU)
+         .xAxisEnd (NL)
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)
          .seriesColor (Color.RED)

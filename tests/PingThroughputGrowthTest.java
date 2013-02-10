@@ -13,16 +13,40 @@ import java.awt.Color;
 public class PingThroughputGrowthTest {
 
     public static void main(String args[]) {
+        int NU = 0;
+        int NL = 0;
+        int num_tests = 0;
+        int num_trials = 0;
+        long seed = 0;
+
+        // Argument Validation
         if (args.length != 5) {
             System.out.println("Usage: java PingThroughputGrowthTest <NL> <NU> <tests> <trials> <seed>");
             System.exit(1);
         }
 
-        int NL = Integer.parseInt(args[0]);
-        int NU = Integer.parseInt(args[1]);
-        int num_tests = Integer.parseInt(args[2]);
-        int num_trials = Integer.parseInt(args[3]);
-        long seed = Long.parseLong(args[4]);
+        try {
+            NL = Integer.parseInt(args[0]);
+            NU = Integer.parseInt(args[1]);
+            num_tests = Integer.parseInt(args[2]);
+            num_trials = Integer.parseInt(args[3]);
+            
+            seed = Long.parseLong(args[4]);
+        }
+        catch (Exception e) {
+            System.out.println("Error - All arguments must be numerical.");
+            System.exit(1);
+        }
+
+        if (NL < 1) {
+            System.out.println("Error - NL must be a positive number.");
+            System.exit(1);
+        }
+
+        if (NU <= NL) {
+            System.out.println("Error - NU must be greater than NL.");
+            System.exit(1);
+        }
 
         Random seed_generator = new Random(seed);
 
@@ -103,7 +127,7 @@ public class PingThroughputGrowthTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
-         .xAxisTitle ("Dimension N")
+         .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Number of Hops")
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)

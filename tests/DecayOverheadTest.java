@@ -13,15 +13,36 @@ public class DecayOverheadTest {
 
     public static void main(String args[]) {
 
+        int NL = 0;
+        int NU = 0;
+        int num_tests = 0;
+        long seed = 0;
+
         if (args.length != 4) {
             System.out.println("Usage: java DecayOverheadTest <NU> <NL> <tests> <seed>");
             System.exit(1);
         }
 
-        int NU = Integer.parseInt(args[0]);
-        int NL = Integer.parseInt(args[1]);
-        int num_tests = Integer.parseInt(args[2]);
-        long seed = Long.parseLong(args[3]);
+        try {
+            NU = Integer.parseInt(args[0]);
+            NL = Integer.parseInt(args[1]);
+            num_tests = Integer.parseInt(args[2]);
+            seed = Long.parseLong(args[3]);
+        }
+        catch (Exception e) {
+            System.out.println("Error - All arguments must be numerical.");
+            System.exit(1);
+        }
+
+        if (NL < 1) {
+            System.out.println("Error - NL must be a positive number.");
+            System.exit(1);
+        }
+
+        if (NU <= NL) {
+            System.out.println("Error - NU must be greater than NL.");
+            System.exit(1);
+        }
 
         Random seed_generator = new Random(seed);
 
@@ -88,7 +109,7 @@ public class DecayOverheadTest {
         System.out.printf ("T Value: %.3f    P Value: %.3f %n", ttest[0], ttest[1]);
 
         new Plot()
-         .xAxisTitle ("Number of Nodes Removed")
+         .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Number of Messages Recieved")
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)

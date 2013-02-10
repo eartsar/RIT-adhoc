@@ -35,6 +35,7 @@ public class PingOverheadGrowthTest {
         }
         catch (Exception e) {
             System.out.println("Error - All arguments must be numerical.");
+            System.exit(1);
         }
 
         if (NL < 1) {
@@ -136,7 +137,7 @@ public class PingOverheadGrowthTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
-         .xAxisTitle ("Number of Nodes")
+         .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Packets Recieved")
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)

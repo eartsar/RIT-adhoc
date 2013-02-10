@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import edu.rit.numeric.ListSeries;
 import edu.rit.numeric.ListXYSeries;
 import edu.rit.numeric.plot.Plot;
@@ -35,6 +36,7 @@ public class PingThroughputDecayTest {
         }
         catch (Exception e) {
             System.out.println("Error - All arguments must be numerical.");
+            System.exit(1);
         }
 
         if (NL < 1) {
@@ -87,14 +89,11 @@ public class PingThroughputDecayTest {
                     Node source = olsr.getRandomNode();
                     Node destination = olsr.getRandomNode();
 
-                    olsr.ping(source, destination);
-                    tora.ping(source, destination);
+                    LinkedList<Node> olsr_path = olsr.ping(source, destination);
+                    LinkedList<Node> tora_path = tora.ping(source, destination);
                     
-                    int tora_overhead = tora.getTotalPacketsRecieved();
-                    int olsr_overhead = olsr.getTotalPacketsRecieved();
-
-                    toraBSeries.add(tora_overhead);
-                    olsrBSeries.add(olsr_overhead);
+                    toraBSeries.add(olsr_path.size());
+                    olsrBSeries.add(tora_path.size());
                 }
 
                 Series.Stats toraTrialsStats = toraBSeries.stats();
@@ -137,10 +136,10 @@ public class PingThroughputDecayTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
-         .xAxisTitle ("Number of Nodes")
-         .yAxisTitle ("Packets Recieved")
-         .xAxisStart (100)
-         .xAxisEnd (0)
+         .xAxisTitle ("Nodes N in Network")
+         .yAxisTitle ("Number of Hops")
+         .xAxisStart (NU)
+         .xAxisEnd (NL)
          .seriesStroke (Strokes.solid (1))
          .seriesDots (null)
          .seriesColor (Color.RED)
