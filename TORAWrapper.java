@@ -430,6 +430,14 @@ public class TORAWrapper extends ManetWrapper {
 
 	@Override
 	public void addNodeCallback(Node node) {
+		//Add node to Overhead counters
+		if (!this.QRY_sent_counter.containsKey(node)) {
+			this.QRY_sent_counter.put(node, 0);
+			this.QRY_rec_counter.put(node, 0);
+			this.UPD_sent_counter.put(node, 0);
+			this.UPD_rec_counter.put(node, 0);
+    	}
+    	
 		//Use UPD packets to communicate with new node
 		for (Node neighbor : node.getNeighbors()) {
 			incUPDSent(neighbor);
