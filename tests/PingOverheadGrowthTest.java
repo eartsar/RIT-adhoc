@@ -144,6 +144,7 @@ public class PingOverheadGrowthTest {
         
         // Now that we ran through the tests, time to do some stats
         new Plot()
+         .plotTitle ("Overhead during Pings (Growth)")
          .xAxisTitle ("Nodes N in Network")
          .yAxisTitle ("Packets Recieved")
          .seriesStroke (Strokes.solid (1))
