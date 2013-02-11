@@ -1,12 +1,24 @@
 import java.util.HashSet;
 import java.awt.geom.Point2D;
 
+/*
+ * Node class used to define a single point in the network
+ * 	A node represent a device that is part of an Ad-Hoc network.
+ * 
+ */
 public class Node {
 
     private double x, y, comm_range;
     private HashSet<Node> neighbors = null;
 
-
+    /**
+     * Node(x, y, comm_range)
+     * 	Each node has coordinates and a communication range to link to
+     * 	other nearyby nodes.
+     * As a simulated device in the world nodes can only see a limited 
+     * 	sub-section of nodes in the entire network. These nodes are kept
+     * 	track of as neighbors.
+     */
     public Node(double x, double y, double comm_range) {
         this.x = x;
         this.y = y;

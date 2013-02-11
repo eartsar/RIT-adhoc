@@ -62,18 +62,26 @@ public abstract class ManetWrapper implements ManetListener{
     }
 
 
+    /**
+     * floodBFS()
+     * 	Helper function, used to test that each Node in the network 
+     * 	is linked to another node. Also provides how many layers the network
+     * 	contains.
+     * 
+     * @return Integer - number of layers in the BFS
+     */
     public int floodBFS() { return floodBFS(false); }
     public int floodBFS(boolean verbose) {
 
         if (network.getGraph().isEmpty() ) {
             return 0;
         }
-
+        
         Node closest_node = getRandomNode();
 
+        //Internal variables used in BFS
         LinkedList<Node> queue = new LinkedList<Node>();
         HashSet<Node> marked = new HashSet<Node>();
-
         HashSet<Node> current_layer = new HashSet<Node>();
         HashSet<Node> next_layer = new HashSet<Node>();
         int num_layers = 1;
@@ -82,11 +90,13 @@ public abstract class ManetWrapper implements ManetListener{
             System.out.println("Layer: " + num_layers + " --> " + current_layer.size());
         }
 
+        //Pick first node
         queue.offer(closest_node);
         marked.add(closest_node);
 
         current_layer.add(closest_node);
 
+        //Iterate through all nodes in the network
         while (!queue.isEmpty()) {
             Node visit = queue.poll();
 
@@ -131,10 +141,14 @@ public abstract class ManetWrapper implements ManetListener{
         return num_layers;
     }
 
-
+    
     public void show() { this.network.show(); }
     public Iterator<Node> iterator() { return this.network.iterator(); }
 
+    /*
+     * Abstract functions that are all implemented by protocol 
+     * 	specific wrappers.
+     */
     public abstract LinkedList<Node> ping(Node source, Node destination);
     public abstract void addNodeCallback(Node node);
     public abstract void removeNodeCallback(Node node);
