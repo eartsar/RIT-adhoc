@@ -1,5 +1,10 @@
 import java.awt.geom.Point2D;
 
+/**
+ * UniformManet - this class extends the Manet Class
+ * 	This class creates a Manet network using a uniform distribution. 
+ *
+ */
 public class UniformManet extends Manet {
 
     public UniformManet(long prng_seed) {

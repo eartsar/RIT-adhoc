@@ -1,39 +1,42 @@
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Stack;
 
 
+/**
+ * TORAWrapper extends the ManetWrapper class as the implementation of the 
+ * 	Temporally Ordered Routing Algorithm (TORA) for a Mobile Ad-Hoc network 
+ * 	(MANET).
+ *
+ * The TORA algorithm creates a Directed Acyclical Graph represented by:
+ * 	listofLists. This structure is used to record the paths between a 
+ * 	source and destination node when called with ping().
+ * 
+ * TORAWrapper also simulates the control packets that are sent between 
+ * 	nodes:
+ * 	Query Packets - sent from Src to find Dst
+ * 	Update Packets - sent from Dst back to Src
+ *
+ */
 public class TORAWrapper extends ManetWrapper {
 	
-	
+	// The following Maps are used to store the number of overhead packets
+	//	used by each node. Keeps both send & received packets.
     HashMap<Node, Integer> QRY_sent_counter;
     HashMap<Node, Integer> QRY_rec_counter;
     HashMap<Node, Integer> UPD_sent_counter;
     HashMap<Node, Integer> UPD_rec_counter;
     
-    int removedNodes_QRY_sent_count;
-    int removedNodes_QRY_rec_count;
-    int removedNodes_UPD_sent_count;
-    int removedNodes_UPD_rec_count;
-    
-    //Internal DAG structure
+    //Internal Directed Acyclical Graph (DAG) structure
     LinkedList<LinkedList<Node>> listOfPaths;
-    
-    int totQRY_count;
-    int totUPD_count;
-    
-//    HashMap<Node, Boolean> route_required_Bit;
-    //Map of each node's route_request bit. Each node stores an RR bit for each 
-    //	possible destination node in the network.
-    //	<source, <destination, set/not>>
-    HashMap<Node, HashSet<Node>> routeReq_Dest_bit;
 	
-	
+    /**
+     * TORAWrapper(network, ping_seed)
+     * @param network - Manet network graph
+     * @param ping_seed - seed for generating random
+     * 
+     * Implements the TORA protocol on provided network.
+     */
     public TORAWrapper(Manet network, long ping_seed) {
     	super(network, ping_seed);
     	
@@ -44,29 +47,19 @@ public class TORAWrapper extends ManetWrapper {
     	
     	this.listOfPaths = new LinkedList<LinkedList<Node>>();
     	
-    	this.removedNodes_QRY_sent_count = 0;
-    	this.removedNodes_QRY_rec_count = 0;
-    	this.removedNodes_UPD_sent_count = 0;
-    	this.removedNodes_UPD_rec_count = 0;
-    	
-    	
-//    	this.totQRY_count = 0;
-//    	this.totUPD_count = 0;
-    	
-    	//Represents the RRbit, true=node already received qry; false=not received qry
-//    	this.route_required_Bit = new HashMap<Node, Boolean>();
-    	
-    	this.routeReq_Dest_bit = new HashMap<Node, HashSet<Node>>();
-    	for (Node node : network) {
-			this.routeReq_Dest_bit.put(node, new HashSet<Node>());
-			this.QRY_rec_counter.put(node, 0);
-			this.QRY_sent_counter.put(node, 0);
-			this.UPD_rec_counter.put(node, 0);
-			this.UPD_sent_counter.put(node, 0);
-		}
     }
 
-
+    /**
+     * ping(source, destination)
+     * @param source - Node message ping sent from
+     * @param destination - Node to receive the ping
+     * 
+     * For the TORA algorithm ping() does most of the computing.
+     * 	In this function the DAG is created between the source
+     * 	and destination nodes.
+     * This function also calculates the overhead using both QRY
+     * 	and UPD packets.
+     */
     public LinkedList<Node> ping(Node source, Node destination) {
     	HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
         LinkedList<Node> queue = new LinkedList<Node>();
@@ -76,38 +69,30 @@ public class TORAWrapper extends ManetWrapper {
         queue.add(source);
         predecessors.put(source, null);
         
-
-        // BFS loop
+        // The process of sending QRY packets matches is similar to a BFS
         while (!queue.isEmpty()) {
-//        	System.out.println(queue.toString());
-//        	System.out.println("Queue Length: " + queue.size());
-//        	System.out.println(predecessors.toString());
             Node current = queue.removeFirst();
-//            System.out.println(current);
             
-            // Are we there yet?
+            // Reached destination node?
             if (current == destination) {
-                // generate the path and return it here
+                // For each path the destination node add to the DAG
                 this.listOfPaths.add(constructPath(predecessors, destination));
-                //TODO : Backtrack, UPD packetsb 
             }
 
-            //            System.out.println(current.getNeighbors().toString());
-            // Go through every neighbor of the current node
+            // Send QRY packet is broadcast to all neighboring nodes
             if (current != null) {
             	for (Node neighbor : current.getNeighbors()) {
 
-
             		//Add QRY packet for each added neighbor
-            		//per spec, the QRY packet is re-broadcast to all nodes.
             		incQRYSent(current);
             		incQRYRec(neighbor);
 
-            		// If we've seen the node before, throw away the packet 
+            		// If a node already has QRY packet, drops new one 
             		if(predecessors.containsKey(neighbor)) {
             			continue;
             		}
 
+            		//Get each node ready to send to it's own neighbors
             		predecessors.put(neighbor, current);
             		queue.add(neighbor);
 
@@ -115,11 +100,13 @@ public class TORAWrapper extends ManetWrapper {
             }
         }
         
+        //Check to see if there is a path between Src and Dst
         if ((this.listOfPaths != null) && (this.listOfPaths.size() != 0)) {
-        	//Find path to return
         	
-        	//return Shortest path
+        	//TORA provides multiple paths to a destination
         	result = this.listOfPaths.getFirst();
+        	
+        	// shortest path is used when available
         	int shortestLength = this.listOfPaths.get(0).size();
         	for (LinkedList<Node> linkedList : this.listOfPaths) {
 				if (shortestLength > linkedList.size()) {
@@ -129,29 +116,30 @@ public class TORAWrapper extends ManetWrapper {
 			}
         }
         
-        //Find the numebr of UPD packets
-        // equal to the number of relationships in predecessors - 1
-//        this.totUPD_count = predecessors.size() - 1;
-        
+        //Start link-reversal process, simulate backtracking UPD packets
         for (Map.Entry<Node, Node> entry : predecessors.entrySet()) {
         	if (entry.getValue() == null) {
         		continue;
         	}
         	else {
+        		//Add UPD packets to overhead counters.
         		incUPDSent(entry.getKey());
         		incUPDRec(entry.getValue());
-//        		int newSent = this.UPD_sent_counter.get(entry.getKey()) + 1;
-//        		this.UPD_sent_counter.put(entry.getKey(), newSent);
-//        		int newRec = this.UPD_rec_counter.get(entry.getValue()) + 1;
-//        		this.UPD_rec_counter.put(entry.getValue(), newRec);
         	}
         }
 
+        //Return path from source to destination
         return result;
     }
 
 
-    // Path generation helper for ping
+    /**
+     * Path generation helper function, creates the path from destination to source
+     * 
+     * @param predecessors - HashMap<Node, Node> of linked nodes between Src & Dst
+     * @param destination - Node 
+     * @return LinkedList<Node> path from DST to Src
+     */
     private LinkedList<Node> constructPath(HashMap<Node, Node> predecessors, Node destination) {
         Node current = destination;
         LinkedList<Node> path = new LinkedList<Node>();
@@ -164,7 +152,10 @@ public class TORAWrapper extends ManetWrapper {
         return path;
     }
     
-    
+    /**
+     * Helper function to increment a Nodes QRY_sent overhead by 1.
+     * @param currentNode - node whose count to be incremented
+     */
     public void incQRYSent(Node currentNode) {
     	if (this.QRY_sent_counter.containsKey(currentNode)) {
     		int tmp = this.QRY_sent_counter.get(currentNode) + 1;
@@ -176,6 +167,10 @@ public class TORAWrapper extends ManetWrapper {
     }
 
     
+    /**
+     * Helper function to increment a Nodes QRY_received overhead by 1.
+     * @param currentNode - node whose count to be incremented
+     */
     public void incQRYRec(Node currentNode) {
     	if (this.QRY_rec_counter.containsKey(currentNode)) {
     		int tmp = this.QRY_rec_counter.get(currentNode) + 1;
@@ -187,6 +182,10 @@ public class TORAWrapper extends ManetWrapper {
     }
     
     
+    /**
+     * Helper function to increment a Nodes UPD_sent overhead by 1.
+     * @param currentNode - node whose count to be incremented
+     */
     public void incUPDSent(Node currentNode) {
     	if (this.UPD_sent_counter.containsKey(currentNode)) {
     		int tmp = this.UPD_sent_counter.get(currentNode) + 1;
@@ -198,6 +197,10 @@ public class TORAWrapper extends ManetWrapper {
     }
     
 
+    /**
+     * Helper function to increment a Nodes UPD_received overhead by 1.
+     * @param currentNode - node whose count to be incremented
+     */
     public void incUPDRec(Node currentNode) {
     	if (this.UPD_rec_counter.containsKey(currentNode)) {
     		int tmp = this.UPD_rec_counter.get(currentNode) + 1;
@@ -210,164 +213,21 @@ public class TORAWrapper extends ManetWrapper {
     }
     
     
-     public LinkedHashSet<Node> recurseQueries(Node source, Node destination) {
-    	
-    	//Check Neighbors; 
-    	HashSet<Node> neighbors = source.getNeighbors();
-    	//HashSet to hold all neighbors which have their own neighbors
-    	HashSet<Node> newSources = new HashSet<Node>();
-    	//HashSet to hold backrack process from dest > source
-    	LinkedHashSet<Node> backtrack = new LinkedHashSet<Node>();
-    	
-    	if (source == destination) {
-    		//Start backtrack process
-    		backtrack.add(source);
-    		return backtrack;
-    	}
-    	else {
-
-    		if (!neighbors.isEmpty()) {
-    			if (hasUnmetNeighbors(source, destination) == true) {
-
-    				//Check if isLastNeighbor, start sending UPD
-
-    				for (Node neighbor : neighbors) {
-    					if (sendQuery(source, destination, neighbor) == true) {
-    						//add to HashSet to flood to child nodes
-    						newSources.add(neighbor);
-    					}
-    					else {
-    						//Node already received QRY
-    					}
-    				}
-
-    				//loop through the hashset created above:
-    				for (Node newNeighbor : newSources) {
-    					backtrack =  recurseQueries(newNeighbor, destination);
-    					if(backtrack == null) {
-//    						return null;
-    					}
-    					else {
-    						backtrack.add(newNeighbor);
-    						return backtrack;
-    					}
-
-    				}
-    			}
-    		}
-    	}
-    	
-    	return null;
-    	
-    }
-    
-    
-    public boolean hasUnmetNeighbors(Node source, Node destination) {
-    	//This function checks if a node has any neighbors who havent' 
-    	//	heard the qry.
-    	
-    	//Get Neighbors; 
-    	HashSet<Node> neighbors = source.getNeighbors();
-    	//Set to hold all non RRbit nodes
-    	HashSet<Node> newNodes = new HashSet<Node>();
-    	boolean unmetNeighborFlag = false;
-    	
-    	if (!neighbors.isEmpty()) {
-	    	for (Node neighbor : neighbors) {
-				
-	    		//If the nodes are held within HashMap<neighbor, HashSet<destination>>
-	    		//Then they have already been visited by a qry
-	    		if (!this.routeReq_Dest_bit.get(neighbor).contains(destination)) {
-	    			unmetNeighborFlag = true;
-	    		}
-			}
-    	}
-    	
-    	return unmetNeighborFlag;
-    }
-    
-    
     /**
-     * This function takes in a source and destination node, 
-     * 	If the RR bit of the source node is set then this 
-     * @param source
-     * @param neighbor
-     * @return
+     * Gets total number of QRY & UPD packets received by all nodes 
+     * 	in the network
+     * @return Integer count of total overhead
      */
-    public boolean sendQuery(Node source, Node destination, Node neighbor) {
-    	
-    	boolean RR_alreadyAsked = false;
-    	if (this.routeReq_Dest_bit.get(neighbor).contains(destination)) {
-    		RR_alreadyAsked = true;
-    	}
-    		
-    	
-    	//send query from source node to it's neighbor
-    	//Check if QRY RR bit is set: sendQRY returns true if already sent, false if not
-    	
-    	//Check if RR bit is set; if already set ignore this qry message:
-    	if (RR_alreadyAsked == false) {
-    	
-	    	//increment Qry sent counter
-	    	this.QRY_sent_counter.put(source, (this.QRY_sent_counter.get(source)+1));
-	    	//increment Qry recieved counter
-	    	this.QRY_rec_counter.put(source, (this.QRY_rec_counter.get(source)+1));
-	    	
-	    	//Set RR flag to prevent duplicate Queries
-//	    	this.route_required_Bit.put(source, true);
-	    	this.routeReq_Dest_bit.get(neighbor).add(destination);
-	    	
-	    	//Return true because route bit was not already set
-	    	return true;
-    	}
-    	else {
-    		//return false b/c already received qry
-    		return false;
-    		
-    	}
-    }
-
-    
-    public void showLink (Node source, Node dest) {
-    	//Print the linked source to dest nodes:
-    	
-    	LinkedList<Node> StoDpath = new LinkedList<Node>();
-    	
-    	StoDpath = ping(source, dest);
-//    	System.out.println();
-//    	System.out.println();
-//    	System.out.println();
-    	
-    	String result = "Source: " + source.getX() + ", " + source.getY() + "\n";
-    	//Display the path
-    	for (Node jumpNode : StoDpath) {
-			result += "(" + jumpNode.getX() + ", " + jumpNode.getY() + ")\n";
-		}
-    	result += "Destination: " + dest.getX() + ", " + dest.getY() + "\n"; 
-    	
-//    	System.out.println(result);
-    	
-    	int totQRY = 0;
-    	int totUPD = 0;
-    	
-    	for (Node node : this.network) {
-			totQRY += this.QRY_sent_counter.get(node).intValue();
-		}
-    	for (Node node : this.network) {
-			totQRY += this.UPD_sent_counter.get(node).intValue();
-		}
-    	
-//    	System.out.println("Total QRY packets sent: " + totQRY);
-//    	System.out.println("Total UPD packet sent: " + totUPD);
-    }
-    
-    
     public int getTotalPacketsRecieved() {
     	int total = getQRYtotal() + getUPDtotal();
     	return total;
     }
     
     
+    /**
+     * Gets the total of all QRY packets received by all nodes in the network
+     * @return Integer
+     */
     public int getQRYtotal() {
     	int result = 0;
     	
@@ -375,22 +235,15 @@ public class TORAWrapper extends ManetWrapper {
     	for (Node key : this.QRY_rec_counter.keySet()) {
 			result += this.QRY_rec_counter.get(key);
 		}
-//    	for (Node currentNode : network) {
-////			result += this.QRY_sent_counter.get(currentNode);
-//			if (this.QRY_rec_counter.containsKey(currentNode)) {
-//	    		result += this.QRY_rec_counter.get(currentNode) + 1;
-//	    	}
-//	    	else {
-//	    		continue;
-//	    	}
-//		}
-//    	//Add overhead for removed nodes
-//    	result += this.removedNodes_QRY_rec_count;
     	
     	return result;
     }
     
     
+    /**
+     * Gets the total of all QRY packets received by all nodes in the network
+     * @return Integer
+     */
     public int getUPDtotal() {
     	int result = 0;
 
@@ -398,22 +251,14 @@ public class TORAWrapper extends ManetWrapper {
     	for (Node key : this.UPD_rec_counter.keySet()) {
 			result += this.UPD_rec_counter.get(key);
 		}
-//    	for (Node currentNode : network) {
-////    		result += this.UPD_sent_counter.get(currentNode);
-//    		if (this.UPD_rec_counter.containsKey(currentNode)) {
-//	    		result += this.UPD_rec_counter.get(currentNode) + 1;
-//	    	}
-//	    	else {
-//	    		continue;
-//	    	}
-//    	}
-//    	
-//    	//Add overhead for removed nodes
-//    	result += this.removedNodes_UPD_rec_count;
     	
     	return result;
     }
     
+    
+    /**
+     * Clears all internal overhead counts for all nodes in the network
+     */
     public void clearMetrics() {
     	int zero = 0;
     	for (Node key : this.UPD_rec_counter.keySet()) {
@@ -422,12 +267,16 @@ public class TORAWrapper extends ManetWrapper {
 			this.UPD_rec_counter.put(key, zero);
 			this.UPD_sent_counter.put(key, zero);
 		}
-    	
-    	this.totQRY_count = 0;
-    	this.totUPD_count = 0;
     }
 
 
+    /**
+     * Called everytime a new node is added to the network.
+     * 	simulates how the TORA protocl would interact with a new node
+     * Increments overhead count 
+     * 
+     * @param node - Node new node added.
+     */
 	@Override
 	public void addNodeCallback(Node node) {
 		//Add node to Overhead counters
@@ -438,119 +287,29 @@ public class TORAWrapper extends ManetWrapper {
 			this.UPD_rec_counter.put(node, 0);
     	}
     	
-		//Use UPD packets to communicate with new node
+		//UPD packets are used to communicate with a new node
 		for (Node neighbor : node.getNeighbors()) {
 			incUPDSent(neighbor);
 			incUPDRec(node);
-//			int newSent = this.UPD_sent_counter.get(neighbor);
-//			this.UPD_sent_counter.put(neighbor, newSent);
-//			int newRec = this.UPD_sent_counter.get(node);
-//			this.UPD_sent_counter.put(node, newRec);
-		}
-		
+		}	
 	}
 
-
+	
+	/**
+     * Called everytime a node is removed from the network.
+     * 	simulates how the TORA protocol handles dropped nodes
+     * Increments overhead count 
+     * 
+     * @param node - Node to be removed
+     */
 	@Override
 	public void removeNodeCallback(Node node) {
 		
+		//When a node is removed it either tells all neighboring nodes or
+		// they ask if it still exists. These packets are simulated as updates
 		for (Node neighbor : node.getNeighbors()) {
 			incUPDSent(neighbor);
 			incUPDRec(node);
 		}
-//
-////		HashSet<Node> neighbors = node.getNeighbors();
-//		
-//		boolean recalcRoute = false;
-//		
-//		//Add the overhead of the node that was just deleted to a count so we don't lose it
-//		this.removedNodes_QRY_sent_count += this.QRY_sent_counter.get(node);
-//    	this.removedNodes_QRY_rec_count += this.QRY_rec_counter.get(node);
-//    	this.removedNodes_UPD_sent_count += this.UPD_sent_counter.get(node);
-//    	this.removedNodes_UPD_rec_count += this.UPD_rec_counter.get(node);
-//		
-//		//Get every path that contains the deleted node
-//    	HashSet<LinkedList<Node>> pathsToModify = new HashSet<LinkedList<Node>>();
-//    	HashSet<LinkedList<Node>> unmodifiedPaths = new HashSet<LinkedList<Node>>();
-//		
-//		//Node removed from network
-//		//	first check: involved in path to destination?
-//		//TODO check list of LinkedLists
-//    	for (LinkedList<Node> linkedList : this.listOfPaths) {
-////    		System.out.println("looking for: " + node.toString());
-////    		System.out.println("Inside this list: ");
-////    		for (Node node2 : linkedList) {
-////    			if (node2 != null) {
-////    				System.out.println(node2.toString());
-////    			}
-////			}
-//    		if (linkedList.contains(node)) {
-//    			pathsToModify.add(linkedList);
-//    			recalcRoute = true;
-//    		}
-//    		else {
-//    			unmodifiedPaths.add(linkedList);
-//    		}
-//    	}
-//    	
-//    	
-//    	//Variables to assist reverse path updating
-//    	//HashMap<Node, Node> predecessors = new HashMap<Node, Node>();
-//    	HashSet<Node> visited = new HashSet<Node>();
-//        LinkedList<Node> queue = new LinkedList<Node>();
-//        Stack<Node> stack = new Stack<Node>();
-////        LinkedList<Node> result = new LinkedList<>();
-//    	
-//    	if (recalcRoute) {
-//    		//Iterate up each path, add each node previous to the deleted node to the stack
-//    		for (LinkedList<Node> revPath : pathsToModify) {
-//				
-//    			for (Node prevNode : revPath) {
-//    				if (prevNode != null) {
-//    					if (prevNode != node) {
-//    						stack.push(prevNode);
-//    					}
-//    					else {
-//    						//TODO test
-//    						break;
-//    					}
-//    				}
-//				}
-//    			
-//    			boolean nodesNotUpdated = true;
-//    			while (!stack.isEmpty()) {
-//    				Node current = stack.pop();
-//    				
-//    				//check if there were any paths that weren't modified
-//    				if (unmodifiedPaths.size() == 0) {
-//    					//All paths were modified, add UPD packet for each node
-//						incUPDRec(current);
-//						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
-//    				}
-//    				else {
-//    					boolean usedInUnmodifiedPath = false;
-//    					for (LinkedList<Node> compareList : unmodifiedPaths) {
-//    						if (compareList.contains(current)) {
-//    							continue;
-//    						}
-//    						else {
-//    							usedInUnmodifiedPath = true;
-//    							break;
-//    						}	
-//    					}
-//
-//    					if(usedInUnmodifiedPath) {
-//    						//add UPD packet
-//    						incUPDRec(current);
-//    						incUPDSent(revPath.get(revPath.indexOf(current) + 1));
-//    					}
-//    				}
-//    			}
-//    			
-//    			//loop to next path that contains the deleted node
-//    		}
-//    	}
 	}
-
-
 }
