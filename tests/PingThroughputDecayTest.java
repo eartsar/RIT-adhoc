@@ -10,6 +10,7 @@ import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
+/* TEST 6 - Throughput of a ping in a decaying network */
 public class PingThroughputDecayTest {
 
     public static void main(String args[]) {

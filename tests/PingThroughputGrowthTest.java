@@ -10,7 +10,10 @@ import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
+/* TEST 5 - Test the throughput of a ping by hops
+ */
 public class PingThroughputGrowthTest {
+
 
     public static void main(String args[]) {
         int NU = 0;

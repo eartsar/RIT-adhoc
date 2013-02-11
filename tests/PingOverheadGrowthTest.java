@@ -8,7 +8,7 @@ import edu.rit.numeric.Series;
 import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
-
+/* TEST 3 - Overhead of a ping in a growing network */
 public class PingOverheadGrowthTest {
 
     public static void main(String args[]) {

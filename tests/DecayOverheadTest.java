@@ -9,6 +9,7 @@ import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
+/* TEST 2 - Overhead of a decaying network */
 public class DecayOverheadTest {
 
     public static void main(String args[]) {

@@ -9,6 +9,7 @@ import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
+/* TEST 4 - Overhead of a ping in a decaying network */
 public class PingOverheadDecayTest {
 
     public static void main(String args[]) {

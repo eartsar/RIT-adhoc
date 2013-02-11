@@ -9,6 +9,7 @@ import edu.rit.numeric.Statistics;
 import java.awt.Color;
 
 
+/* TEST 1 - Overhead of a growing network */
 public class GrowthOverheadTest {
 
     public static void main(String args[]) {
